@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-canvas: 247 241 231;
+  --color-ink: 26 31 37;
+  --color-ember: 214 99 51;
+  --color-mint: 56 151 124;
+  --color-sand: 233 223 205;
+  --color-panel: 255 251 245;
+  --color-line: 210 198 179;
+  --color-danger: 175 49 49;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: rgb(var(--color-ink));
+  background:
+    radial-gradient(circle at top left, rgba(214, 99, 51, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(56, 151, 124, 0.12), transparent 25%),
+    rgb(var(--color-canvas));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(214, 99, 51, 0.18);
+}
+
+.text-balance {
+  text-wrap: balance;
+}

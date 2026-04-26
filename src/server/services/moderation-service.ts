@@ -1,0 +1,78 @@
+import { AuditService } from "@/server/services/audit-service";
+import { PlatformRepository } from "@/server/repositories/platform-repository";
+import { MatchService } from "@/server/services/match-service";
+import type { ReportReason } from "@/types/domain";
+
+export class ModerationService {
+  constructor(
+    private readonly repository = new PlatformRepository(),
+    private readonly audit = new AuditService(),
+    private readonly matchService = new MatchService(),
+  ) {}
+
+  async submitReport(userId: string, input: { matchId: string; reason: ReportReason; details: string }) {
+    const match = await this.repository.getMatchById(input.matchId);
+
+    if (match.user_a_id !== userId && match.user_b_id !== userId) {
+      throw new Error("User is not a participant in this match.");
+    }
+
+    const targetUserId = match.user_a_id === userId ? match.user_b_id : match.user_a_id;
+
+    if (match.status === "matched") {
+      await this.matchService.endMatch(userId, input.matchId, "report_submitted");
+    }
+
+    const report = await this.repository.createReport({
+      reporterUserId: userId,
+      reportedUserId: targetUserId,
+      matchId: match.id,
+      sessionId: match.session_id,
+      reason: input.reason,
+      details: input.details,
+    });
+
+    await this.audit.write({
+      actorUserId: userId,
+      targetUserId,
+      matchId: match.id,
+      eventName: "report_submitted",
+      metadata: {
+        reportId: report.id,
+        reason: input.reason,
+      },
+    });
+
+    return report;
+  }
+
+  async blockUser(userId: string, input: { matchId: string }) {
+    const match = await this.repository.getMatchById(input.matchId);
+
+    if (match.user_a_id !== userId && match.user_b_id !== userId) {
+      throw new Error("User is not a participant in this match.");
+    }
+
+    const targetUserId = match.user_a_id === userId ? match.user_b_id : match.user_a_id;
+
+    if (match.status === "matched") {
+      await this.matchService.endMatch(userId, input.matchId, "user_blocked");
+    }
+
+    await this.repository.createBlock({
+      blockerUserId: userId,
+      blockedUserId: targetUserId,
+      matchId: match.id,
+    });
+
+    await this.audit.write({
+      actorUserId: userId,
+      targetUserId,
+      matchId: match.id,
+      eventName: "user_blocked",
+      metadata: {
+        cooldownLoggedOnly: true,
+      },
+    });
+  }
+}
