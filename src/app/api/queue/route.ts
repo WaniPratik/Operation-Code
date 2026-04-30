@@ -11,7 +11,7 @@ export async function GET() {
     const queue = await queueService.getStatus(session.userId);
     return jsonOk({ queue });
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to fetch queue status."), 400);
+    return jsonError(getErrorMessage(error, "Unable to fetch queue status."), getErrorStatus(error, 400));
   }
 }
 
@@ -40,6 +40,6 @@ export async function DELETE() {
     const queue = await queueService.leaveQueue(session.userId);
     return jsonOk({ queue });
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to leave queue."), 400);
+    return jsonError(getErrorMessage(error, "Unable to leave queue."), getErrorStatus(error, 400));
   }
 }

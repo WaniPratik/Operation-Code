@@ -173,7 +173,7 @@ describe("SessionService", () => {
     expect(updated.countryCode).toBeNull();
   });
 
-  it("throws clearly when requireGuestSession is called without a cookie", async () => {
+  it("throws a 401 when requireGuestSession is called without a cookie", async () => {
     const repository = {
       findSessionByTokenHash: vi.fn(),
       touchSession: vi.fn(),
@@ -186,6 +186,9 @@ describe("SessionService", () => {
       detectRequestCountryCode: vi.fn(),
     });
 
-    await expect(service.requireGuestSession()).rejects.toThrow("Guest session is required.");
+    await expect(service.requireGuestSession()).rejects.toMatchObject({
+      message: "Guest session is required.",
+      statusCode: 401,
+    });
   });
 });

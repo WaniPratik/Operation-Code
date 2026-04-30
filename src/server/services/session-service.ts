@@ -18,6 +18,10 @@ interface SessionServiceDeps {
   detectRequestCountryCode: () => Promise<string | null>;
 }
 
+function createStatusError(message: string, statusCode: number) {
+  return Object.assign(new Error(message), { statusCode });
+}
+
 export class SessionService {
   constructor(
     private readonly repository = new PlatformRepository(),
@@ -107,7 +111,7 @@ export class SessionService {
     const token = await this.deps.readGuestSessionTokenFromCookies();
 
     if (!token) {
-      throw new Error("Guest session is required.");
+      throw createStatusError("Guest session is required.", 401);
     }
 
     const session = await this.repository.findSessionByTokenHash(
@@ -115,7 +119,7 @@ export class SessionService {
     );
 
     if (!session?.user || !session.profile) {
-      throw new Error("Guest session is invalid.");
+      throw createStatusError("Guest session is invalid.", 401);
     }
 
     await this.repository.touchSession(session.id, session.user.id);

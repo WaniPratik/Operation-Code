@@ -3,6 +3,10 @@ import { PlatformRepository } from "@/server/repositories/platform-repository";
 import { MatchService } from "@/server/services/match-service";
 import type { ReportReason } from "@/types/domain";
 
+function createStatusError(message: string, statusCode: number) {
+  return Object.assign(new Error(message), { statusCode });
+}
+
 export class ModerationService {
   constructor(
     private readonly repository = new PlatformRepository(),
@@ -14,7 +18,7 @@ export class ModerationService {
     const match = await this.repository.getMatchById(input.matchId);
 
     if (match.user_a_id !== userId && match.user_b_id !== userId) {
-      throw new Error("User is not a participant in this match.");
+      throw createStatusError("User is not a participant in this match.", 403);
     }
 
     const targetUserId = match.user_a_id === userId ? match.user_b_id : match.user_a_id;
@@ -50,7 +54,7 @@ export class ModerationService {
     const match = await this.repository.getMatchById(input.matchId);
 
     if (match.user_a_id !== userId && match.user_b_id !== userId) {
-      throw new Error("User is not a participant in this match.");
+      throw createStatusError("User is not a participant in this match.", 403);
     }
 
     const targetUserId = match.user_a_id === userId ? match.user_b_id : match.user_a_id;

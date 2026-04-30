@@ -1,7 +1,7 @@
+import { REPORT_REASONS } from "@/lib/constants";
+import { getErrorMessage, getErrorStatus, jsonError, jsonOk } from "@/server/http";
 import { ModerationService } from "@/server/services/moderation-service";
 import { SessionService } from "@/server/services/session-service";
-import { getErrorMessage, jsonError, jsonOk } from "@/server/http";
-import { REPORT_REASONS } from "@/lib/constants";
 
 const sessionService = new SessionService();
 const moderationService = new ModerationService();
@@ -9,7 +9,7 @@ const moderationService = new ModerationService();
 export async function POST(request: Request) {
   try {
     const session = await sessionService.requireGuestSession();
-    const body = (await request.json()) as {
+    const body = (await request.json().catch(() => ({}))) as {
       matchId?: string;
       reason?: "harassment" | "sexual content" | "hate or abuse" | "spam or scam" | "underage concern" | "other";
       details?: string;
@@ -35,6 +35,6 @@ export async function POST(request: Request) {
 
     return jsonOk({ report });
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to submit report."), 400);
+    return jsonError(getErrorMessage(error, "Unable to submit report."), getErrorStatus(error, 400));
   }
 }

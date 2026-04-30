@@ -50,8 +50,10 @@ describe("POST /api/session/onboarding", () => {
     });
   });
 
-  it("returns a JSON 400 when no guest session exists", async () => {
-    requireGuestSession.mockRejectedValue(new Error("Guest session is required."));
+  it("returns a JSON 401 when no guest session exists", async () => {
+    requireGuestSession.mockRejectedValue(
+      Object.assign(new Error("Guest session is required."), { statusCode: 401 }),
+    );
 
     const { POST } = await import("@/app/api/session/onboarding/route");
     const response = await POST(
@@ -64,7 +66,7 @@ describe("POST /api/session/onboarding", () => {
       }),
     );
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({
       error: "Guest session is required.",
     });

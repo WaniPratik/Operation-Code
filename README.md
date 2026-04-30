@@ -173,9 +173,23 @@ Supabase schema files live in:
 - [supabase/migrations/202604140002_phase2_refinements.sql](supabase/migrations/202604140002_phase2_refinements.sql)
 - [supabase/migrations/202604140003_tiered_matching.sql](supabase/migrations/202604140003_tiered_matching.sql)
 - [supabase/migrations/202604140004_atomic_match_claiming.sql](supabase/migrations/202604140004_atomic_match_claiming.sql)
+- [supabase/migrations/202604290001_supabase_security_hardening.sql](supabase/migrations/202604290001_supabase_security_hardening.sql)
 - [supabase/seed.sql](supabase/seed.sql)
 
 These SQL files now define the backend persistence layer expected by the route handlers.
+
+## Supabase Security
+
+The app does not use direct browser-to-Supabase data access for MVP flows. All database reads and writes go through the Next.js server using the service-role key.
+
+The security migration [supabase/migrations/202604290001_supabase_security_hardening.sql](supabase/migrations/202604290001_supabase_security_hardening.sql) now codifies that posture by:
+
+- enabling RLS on internal tables
+- revoking table access from `anon` and `authenticated` roles
+- revoking execute access on internal matching RPCs
+- setting an explicit `search_path` on custom matchmaking functions to satisfy Supabase security linting
+
+If a new Supabase environment shows public-access warnings, apply the repo migrations instead of fixing permissions only in the dashboard.
 
 ## Atomic Claiming
 

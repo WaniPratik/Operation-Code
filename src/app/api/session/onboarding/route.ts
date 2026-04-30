@@ -1,5 +1,5 @@
 import { SessionService } from "@/server/services/session-service";
-import { getErrorMessage, jsonError, jsonOk } from "@/server/http";
+import { getErrorMessage, getErrorStatus, jsonError, jsonOk } from "@/server/http";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +22,6 @@ export async function POST(request: Request) {
 
     return jsonOk({ session: updated });
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to complete onboarding."), 400);
+    return jsonError(getErrorMessage(error, "Unable to complete onboarding."), getErrorStatus(error, 400));
   }
 }

@@ -160,6 +160,7 @@ The project includes SQL migration files in:
 - `supabase/migrations/202604140002_phase2_refinements.sql`
 - `supabase/migrations/202604140003_tiered_matching.sql`
 - `supabase/migrations/202604140004_atomic_match_claiming.sql`
+- `supabase/migrations/202604290001_supabase_security_hardening.sql`
 
 There are two common ways to run them.
 
@@ -181,12 +182,21 @@ Run them in this exact order:
 2. `202604140002_phase2_refinements.sql`
 3. `202604140003_tiered_matching.sql`
 4. `202604140004_atomic_match_claiming.sql`
+5. `202604290001_supabase_security_hardening.sql`
 
 ### Option B: Use the Supabase CLI
 
 If you already use the Supabase CLI, you can run migrations from the command line instead.
 
 That workflow depends on your Supabase CLI setup, so if you are not comfortable with it, use Option A above.
+
+Security note:
+
+- This MVP does not read or write Supabase directly from the browser.
+- Do not add public table access for `anon` or `authenticated` just to make local testing easier.
+- Do not add `NEXT_PUBLIC_SUPABASE_ANON_KEY` for product flows in this repo.
+- The migration `202604290001_supabase_security_hardening.sql` is the repo-owned source of truth for RLS, locked-down table access, and private matching RPC permissions.
+- If a future Supabase project shows security warnings, re-run the repo migrations instead of patching permissions only in the dashboard.
 
 ## 9. Seed the Database
 

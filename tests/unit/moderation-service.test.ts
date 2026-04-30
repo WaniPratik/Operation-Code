@@ -53,6 +53,35 @@ describe("ModerationService", () => {
     );
   });
 
+  it("rejects report submissions from non-participants with a 403 status", async () => {
+    const repository = {
+      getMatchById: vi.fn().mockResolvedValue({
+        id: "match_1",
+        session_id: "session_1",
+        status: "ended",
+        user_a_id: "user_a",
+        user_b_id: "user_b",
+      }),
+    };
+
+    const service = new ModerationService(
+      repository as never,
+      { write: vi.fn() } as never,
+      { endMatch: vi.fn() } as never,
+    );
+
+    await expect(
+      service.submitReport("user_c", {
+        matchId: "match_1",
+        reason: "other",
+        details: "Not part of the match.",
+      }),
+    ).rejects.toMatchObject({
+      message: "User is not a participant in this match.",
+      statusCode: 403,
+    });
+  });
+
   it("blocking during a live match ends the session first and writes block audit metadata", async () => {
     const repository = {
       getMatchById: vi.fn().mockResolvedValue({
@@ -91,5 +120,28 @@ describe("ModerationService", () => {
         eventName: "user_blocked",
       }),
     );
+  });
+
+  it("rejects blocks from non-participants with a 403 status", async () => {
+    const repository = {
+      getMatchById: vi.fn().mockResolvedValue({
+        id: "match_1",
+        session_id: "session_1",
+        status: "ended",
+        user_a_id: "user_a",
+        user_b_id: "user_b",
+      }),
+    };
+
+    const service = new ModerationService(
+      repository as never,
+      { write: vi.fn() } as never,
+      { endMatch: vi.fn() } as never,
+    );
+
+    await expect(service.blockUser("user_c", { matchId: "match_1" })).rejects.toMatchObject({
+      message: "User is not a participant in this match.",
+      statusCode: 403,
+    });
   });
 });

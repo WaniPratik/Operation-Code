@@ -39,6 +39,25 @@ describe("MatchService", () => {
     expect(result.status).toBe("idle");
   });
 
+  it("rejects users who are not participants with a 403 status", async () => {
+    const repository = {
+      getMatchById: vi.fn().mockResolvedValue({
+        id: "match_1",
+        session_id: "session_1",
+        status: "matched",
+        user_a_id: "user_a",
+        user_b_id: "user_b",
+      }),
+    };
+
+    const service = new MatchService(repository as never, { cleanupRoom: vi.fn() } as never);
+
+    await expect(service.endMatch("user_c", "match_1")).rejects.toMatchObject({
+      message: "User is not a participant in this match.",
+      statusCode: 403,
+    });
+  });
+
   it("does not fail match end if room cleanup throws", async () => {
     const repository = {
       getMatchById: vi.fn().mockResolvedValue({

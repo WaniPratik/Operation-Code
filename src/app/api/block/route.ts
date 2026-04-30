@@ -1,6 +1,6 @@
+import { getErrorMessage, getErrorStatus, jsonError, jsonOk } from "@/server/http";
 import { ModerationService } from "@/server/services/moderation-service";
 import { SessionService } from "@/server/services/session-service";
-import { getErrorMessage, jsonError, jsonOk } from "@/server/http";
 
 const sessionService = new SessionService();
 const moderationService = new ModerationService();
@@ -8,7 +8,7 @@ const moderationService = new ModerationService();
 export async function POST(request: Request) {
   try {
     const session = await sessionService.requireGuestSession();
-    const body = (await request.json()) as { matchId?: string };
+    const body = (await request.json().catch(() => ({}))) as { matchId?: string };
 
     if (!body.matchId) {
       return jsonError("matchId is required.", 400);
@@ -20,6 +20,6 @@ export async function POST(request: Request) {
 
     return jsonOk({ success: true });
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to block user."), 400);
+    return jsonError(getErrorMessage(error, "Unable to block user."), getErrorStatus(error, 400));
   }
 }

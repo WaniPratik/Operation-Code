@@ -1,6 +1,10 @@
 import { PlatformRepository } from "@/server/repositories/platform-repository";
 import { VoiceService } from "@/server/services/voice-service";
 
+function createStatusError(message: string, statusCode: number) {
+  return Object.assign(new Error(message), { statusCode });
+}
+
 export class MatchService {
   constructor(
     private readonly repository = new PlatformRepository(),
@@ -15,7 +19,7 @@ export class MatchService {
     const match = await this.repository.getMatchById(matchId);
 
     if (match.user_a_id !== userId && match.user_b_id !== userId) {
-      throw new Error("User is not a participant in this match.");
+      throw createStatusError("User is not a participant in this match.", 403);
     }
 
     if (match.status === "matched") {
