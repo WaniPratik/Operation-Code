@@ -141,3 +141,26 @@ export async function apiDelete<T>(input: string) {
 
   return parseApiResponse<T>(response, input);
 }
+
+type BestEffortApiRequestOptions = {
+  method: "POST" | "DELETE";
+  body?: unknown;
+};
+
+export function sendBestEffortApiRequest(input: string, options: BestEffortApiRequestOptions) {
+  const headers = options.body
+    ? {
+        "Content-Type": "application/json",
+      }
+    : undefined;
+
+  void fetch(input, {
+    method: options.method,
+    credentials: "include",
+    keepalive: true,
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  }).catch(() => {
+    // Best-effort cleanup should never interrupt the current page exit.
+  });
+}

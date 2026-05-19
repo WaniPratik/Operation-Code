@@ -1,12 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
-import { apiGet, apiPost, isSessionExpiredError } from "@/lib/client/api";
+import {
+  apiGet,
+  apiPost,
+  isSessionExpiredError,
+  sendBestEffortApiRequest,
+} from "@/lib/client/api";
 import type { QueueStatusView } from "@/types/domain";
 import { LiveVoiceRoom } from "@/features/match/live-voice-room";
 import { useGuestSession } from "@/features/session/guest-session-provider";
@@ -17,9 +22,11 @@ export function MatchPage() {
   const [queue, setQueue] = useState<QueueStatusView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [liveUpdateError, setLiveUpdateError] = useState<string | null>(null);
   const [sessionRecoveryNeeded, setSessionRecoveryNeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const cleanupMatchIdRef = useRef<string | null>(null);
 
   async function loadMatchState(options?: { background?: boolean }) {
     const isBackground = options?.background ?? false;
@@ -33,11 +40,21 @@ export function MatchPage() {
       const payload = await apiGet<{ queue: QueueStatusView }>("/api/match");
       setQueue(payload.queue);
       setSessionRecoveryNeeded(false);
+      setLiveUpdateError(null);
       setError(null);
     } catch (caughtError) {
       const message = caughtError instanceof Error ? caughtError.message : "Unable to fetch match state.";
-      setError(message);
-      setSessionRecoveryNeeded(isSessionExpiredError(caughtError));
+      const needsSessionRestart = isSessionExpiredError(caughtError);
+
+      setSessionRecoveryNeeded(needsSessionRestart);
+
+      if (needsSessionRestart || !isBackground) {
+        setError(message);
+        setLiveUpdateError(null);
+        return;
+      }
+
+      setLiveUpdateError(message);
     } finally {
       if (!isBackground) {
         setLoading(false);
@@ -82,6 +99,33 @@ export function MatchPage() {
     const elapsed = Math.floor((now - Date.parse(currentMatch.matchedAt)) / 1000);
     return Math.max(0, currentMatch.preConnectionSeconds - elapsed);
   }, [currentMatch, now]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const activeMatchId = currentMatch?.status === "matched" ? currentMatch.matchId : null;
+
+    const handlePageHide = () => {
+      if (!activeMatchId || sessionRecoveryNeeded || activeMatchId === cleanupMatchIdRef.current) {
+        return;
+      }
+
+      cleanupMatchIdRef.current = activeMatchId;
+      sendBestEffortApiRequest("/api/match/end", {
+        method: "POST",
+        body: {
+          matchId: activeMatchId,
+          reason: "disconnect",
+        },
+      });
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, [currentMatch, sessionRecoveryNeeded]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -140,6 +184,21 @@ export function MatchPage() {
             {error}
             <div className="mt-3">
               <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void loadMatchState()}>
+                Try Again
+              </Button>
+            </div>
+          </Notice>
+        ) : null}
+
+        {liveUpdateError ? (
+          <Notice title="Connection dropped." tone="warning">
+            We lost live updates for a moment. Your session may still be active, and we’re retrying now.
+            <div className="mt-3">
+              <Button
+                variant="ghost"
+                className="w-full sm:w-auto"
+                onClick={() => void loadMatchState({ background: true })}
+              >
                 Try Again
               </Button>
             </div>

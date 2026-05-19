@@ -139,6 +139,9 @@ cp .env.example .env.local
 
 Fill in the Supabase values plus these LiveKit values before testing voice:
 
+- `NEXT_PUBLIC_APP_URL`: public app origin such as `http://localhost:3000` or `https://beta.example.com`
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project root URL such as `https://your-project.supabase.co`
+- `SUPABASE_SERVICE_ROLE_KEY`: server-side `service_role` key from Supabase
 - `NEXT_PUBLIC_LIVEKIT_URL`: websocket URL, such as `wss://your-project.livekit.cloud` or `ws://localhost:7880`
 - `LIVEKIT_API_KEY`: server-side API key used to mint room tokens
 - `LIVEKIT_API_SECRET`: server-side API secret used to mint room tokens and delete rooms on match end
@@ -156,6 +159,24 @@ Run unit tests:
 npm run test
 ```
 
+Check startup readiness:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+What good looks like:
+
+- HTTP `200`
+- JSON `status: "ok"`
+- each check reports `status: "ready"`
+
+If something is wrong:
+
+- the route returns HTTP `503`
+- the JSON response tells you exactly which variable is missing or malformed
+- no secrets are returned in the response
+
 Before inviting private beta testers, review [BETA_CHECKLIST.md](BETA_CHECKLIST.md), [BETA_ISSUE_INTAKE.md](BETA_ISSUE_INTAKE.md), and [BETA_TESTING_SCRIPT.md](BETA_TESTING_SCRIPT.md), then confirm your local or staging environment uses the correct Supabase, LiveKit, and admin credentials for that environment.
 
 The main MVP routes are:
@@ -166,6 +187,34 @@ The main MVP routes are:
 - `/match`
 - `/session/complete`
 - `/admin` (password-protected internal moderation dashboard)
+- `/api/health` (safe readiness check for local or staging verification)
+
+## Startup Validation
+
+The server now validates configuration more clearly so local and staging mistakes fail fast with founder-readable messages.
+
+Examples:
+
+- missing `SUPABASE_SERVICE_ROLE_KEY` tells you the exact variable name and where to find it
+- malformed `NEXT_PUBLIC_SUPABASE_URL` tells you to use the project root URL
+- malformed `NEXT_PUBLIC_LIVEKIT_URL` tells you to use the websocket origin without a path
+- placeholder values copied from `.env.example` are treated as invalid until replaced
+
+## Staging Verification
+
+Before inviting testers into staging:
+
+1. Set these exact variables in the staging environment:
+   - `NEXT_PUBLIC_APP_URL`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_LIVEKIT_URL`
+   - `LIVEKIT_API_KEY`
+   - `LIVEKIT_API_SECRET`
+   - `ADMIN_ACCESS_PASSWORD`
+2. Open `/api/health` on the staging URL and confirm it returns HTTP `200` with `status: "ok"`.
+3. Open `/admin` and confirm the admin password works.
+4. Run a two-browser smoke test through onboarding, queue, match, voice, and end session.
 
 Supabase schema files live in:
 

@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CountryFilterPicker } from "@/components/ui/country-filter-picker";
 import { Notice } from "@/components/ui/notice";
-import { apiDelete, apiGet, apiPost, isSessionExpiredError } from "@/lib/client/api";
+import {
+  apiDelete,
+  apiGet,
+  apiPost,
+  isSessionExpiredError,
+  sendBestEffortApiRequest,
+} from "@/lib/client/api";
 import { useGuestSession } from "@/features/session/guest-session-provider";
 import {
   getConnectingSecondsRemaining,
@@ -34,6 +40,7 @@ export function QueuePage() {
   const [submitting, setSubmitting] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [isDocumentVisible, setIsDocumentVisible] = useState(true);
+  const cleanupQueueEntryIdRef = useRef<string | null>(null);
 
   async function loadQueueState(options?: { background?: boolean }) {
     const isBackground = options?.background ?? false;
@@ -135,6 +142,27 @@ export function QueuePage() {
 
     router.push("/match");
   }, [queueUiStatus, router]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const activeQueueEntryId = queueUiStatus === "queued" ? queue?.queueEntryId : null;
+
+    const handlePageHide = () => {
+      if (!activeQueueEntryId || needsSessionRecovery || activeQueueEntryId === cleanupQueueEntryIdRef.current) {
+        return;
+      }
+
+      cleanupQueueEntryIdRef.current = activeQueueEntryId;
+      sendBestEffortApiRequest("/api/queue", { method: "DELETE" });
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, [needsSessionRecovery, queue?.queueEntryId, queueUiStatus]);
 
   const canJoin =
     Boolean(session?.onboardingCompleted) &&

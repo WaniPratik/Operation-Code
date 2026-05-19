@@ -93,9 +93,9 @@ Then open `.env.local` in a text editor and fill in the real values.
 
 You need these values from your Supabase project and your LiveKit setup:
 
+- `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_LIVEKIT_URL`
 - `LIVEKIT_API_KEY`
 - `LIVEKIT_API_SECRET`
@@ -151,6 +151,12 @@ In LiveKit:
 Choose your own internal admin password and add that too.
 
 Paste all of those into `.env.local`
+
+Founder-safe reminder:
+
+- `NEXT_PUBLIC_SUPABASE_URL` must be the project root URL like `https://your-project.supabase.co`
+- `NEXT_PUBLIC_LIVEKIT_URL` must be the websocket server origin like `wss://your-project.livekit.cloud`
+- do not leave any `.env.example` placeholder value unchanged, or the app will now fail readiness checks on purpose
 
 ## 8. Run Database Migrations
 
@@ -228,9 +234,34 @@ If everything works, the terminal will show a local web address, usually:
 
 Open that link in your browser.
 
+## 11. Quick Readiness Check
+
+Before testing the full product flow, confirm the app sees the right configuration.
+
+Open this URL in your browser:
+
+- [http://localhost:3000/api/health](http://localhost:3000/api/health)
+
+What you want to see:
+
+- HTTP status `200`
+- JSON with `"status": "ok"`
+- checks for:
+  - app boot
+  - app URL
+  - Supabase config
+  - LiveKit config
+  - admin password
+
+If something is wrong:
+
+- the route returns HTTP `503`
+- the JSON explains which variable is missing or malformed
+- no secret values are shown in the response
+
 Before inviting anyone into a private beta, also review `BETA_CHECKLIST.md` in the repo. It gives a short founder-friendly launch checklist for local and staging smoke tests.
 
-## 11. Run the Tests
+## 12. Run the Tests
 
 To run the automated tests:
 
@@ -242,7 +273,7 @@ This checks the matching logic and some queue/match/report flow behavior.
 
 If tests pass, you should see a success summary in Terminal.
 
-## 12. Open Two Local User Sessions For Manual Testing
+## 13. Open Two Local User Sessions For Manual Testing
 
 Because the app uses guest sessions stored in cookies, the easiest way to simulate two different users is to use two separate browser contexts.
 
