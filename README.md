@@ -232,6 +232,7 @@ Supabase schema files live in:
 - [supabase/migrations/202604140004_atomic_match_claiming.sql](supabase/migrations/202604140004_atomic_match_claiming.sql)
 - [supabase/migrations/202604290001_supabase_security_hardening.sql](supabase/migrations/202604290001_supabase_security_hardening.sql)
 - [supabase/migrations/202605210001_beta_feedback_auth_controls.sql](supabase/migrations/202605210001_beta_feedback_auth_controls.sql)
+- [supabase/migrations/202605210002_feedback_optional_text.sql](supabase/migrations/202605210002_feedback_optional_text.sql)
 - [supabase/seed.sql](supabase/seed.sql)
 
 These SQL files now define the backend persistence layer expected by the route handlers.

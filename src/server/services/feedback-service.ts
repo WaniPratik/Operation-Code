@@ -23,10 +23,6 @@ export class FeedbackService {
 
     const feedbackText = input.feedbackText.trim();
 
-    if (!feedbackText) {
-      throw createStatusError("Feedback text is required.", 400);
-    }
-
     if (feedbackText.length > 1000) {
       throw createStatusError("Feedback must be 1000 characters or fewer.", 400);
     }

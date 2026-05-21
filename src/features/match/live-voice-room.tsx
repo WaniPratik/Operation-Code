@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Room, RoomEvent, Track } from "livekit-client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FeedbackForm } from "@/components/ui/feedback-form";
+import { FeedbackPrompt } from "@/components/ui/feedback-prompt";
 import { Notice } from "@/components/ui/notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { apiPost, isSessionExpiredError } from "@/lib/client/api";
@@ -354,7 +354,7 @@ export function LiveVoiceRoom({
               >
                 {voiceError}
               </Notice>
-              <FeedbackForm matchId={match.matchId} defaultType="audio issue" compact />
+              <FeedbackPrompt matchId={match.matchId} defaultType="audio issue" label="Tell us what happened" />
             </div>
           ) : null}
           {audioBlocked ? (

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FeedbackForm } from "@/components/ui/feedback-form";
+import { FeedbackPrompt } from "@/components/ui/feedback-prompt";
 import { Notice } from "@/components/ui/notice";
 import {
   apiGet,
@@ -232,10 +232,10 @@ export function MatchPage() {
                 </Button>
               </div>
             </Notice>
-            <FeedbackForm
+            <FeedbackPrompt
               matchId={currentMatch?.matchId ?? queue?.recentMatch?.matchId ?? null}
               defaultType="audio issue"
-              compact
+              label="Tell us what happened"
             />
           </div>
         ) : null}
@@ -254,10 +254,10 @@ export function MatchPage() {
                 </Button>
               </div>
             </Notice>
-            <FeedbackForm
+            <FeedbackPrompt
               matchId={currentMatch?.matchId ?? queue?.recentMatch?.matchId ?? null}
               defaultType="audio issue"
-              compact
+              label="Tell us what happened"
             />
           </div>
         ) : null}

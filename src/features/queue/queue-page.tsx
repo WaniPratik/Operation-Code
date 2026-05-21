@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CountryFilterPicker } from "@/components/ui/country-filter-picker";
-import { FeedbackForm } from "@/components/ui/feedback-form";
+import { FeedbackPrompt } from "@/components/ui/feedback-prompt";
 import { Notice } from "@/components/ui/notice";
 import {
   apiDelete,
@@ -253,7 +253,7 @@ export function QueuePage() {
                 </Button>
               </div>
             </Notice>
-            <FeedbackForm defaultType="matching issue" compact />
+            <FeedbackPrompt defaultType="matching issue" label="Tell us what happened" />
           </div>
         ) : null}
 
@@ -271,7 +271,7 @@ export function QueuePage() {
                 </Button>
               </div>
             </Notice>
-            <FeedbackForm defaultType="matching issue" compact />
+            <FeedbackPrompt defaultType="matching issue" label="Tell us what happened" />
           </div>
         ) : null}
 

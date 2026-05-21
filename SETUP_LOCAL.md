@@ -179,6 +179,7 @@ The project includes SQL migration files in:
 - `supabase/migrations/202604140004_atomic_match_claiming.sql`
 - `supabase/migrations/202604290001_supabase_security_hardening.sql`
 - `supabase/migrations/202605210001_beta_feedback_auth_controls.sql`
+- `supabase/migrations/202605210002_feedback_optional_text.sql`
 
 There are two common ways to run them.
 
@@ -202,6 +203,7 @@ Run them in this exact order:
 4. `202604140004_atomic_match_claiming.sql`
 5. `202604290001_supabase_security_hardening.sql`
 6. `202605210001_beta_feedback_auth_controls.sql`
+7. `202605210002_feedback_optional_text.sql`
 
 ### Option B: Use the Supabase CLI
 

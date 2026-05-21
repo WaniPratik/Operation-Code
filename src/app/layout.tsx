@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import "@/app/globals.css";
 import { Providers } from "@/app/providers";
 import { SiteHeader } from "@/components/layout/site-header";
+import { FeedbackWidget } from "@/components/ui/feedback-widget";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
           <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-10 pt-4 sm:px-6 lg:px-8">
             <SiteHeader />
             <main className="flex-1">{children}</main>
+            <FeedbackWidget />
           </div>
         </Providers>
       </body>

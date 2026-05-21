@@ -47,6 +47,38 @@ describe("FeedbackService", () => {
     );
   });
 
+  it("allows type-only feedback without blocking the main flow", async () => {
+    const repository = {
+      incrementRateLimit: vi.fn().mockResolvedValue(1),
+      createFeedback: vi.fn().mockResolvedValue({
+        feedbackId: "feedback_2",
+        feedbackType: "suggestion",
+        feedbackText: "",
+        userId: "user_1",
+        matchId: null,
+        userAgent: null,
+        createdAt: "2026-05-21T00:00:00.000Z",
+      }),
+      writeAuditEvent: vi.fn().mockResolvedValue(undefined),
+    };
+    const service = new FeedbackService(repository as never);
+
+    await service.submitFeedback({
+      feedbackType: "suggestion",
+      feedbackText: "   ",
+      userId: "user_1",
+      matchId: null,
+      userAgent: null,
+      fingerprintHash: "fingerprint_1",
+    });
+
+    expect(repository.createFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        feedbackText: "",
+      }),
+    );
+  });
+
   it("rejects invalid feedback type and spam bursts", async () => {
     const repository = {
       incrementRateLimit: vi.fn().mockResolvedValue(6),

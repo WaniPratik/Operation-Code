@@ -14,9 +14,17 @@ interface FeedbackFormProps {
   matchId?: string | null;
   defaultType?: FeedbackType;
   compact?: boolean;
+  onCancel?: () => void;
+  onSubmitted?: () => void;
 }
 
-export function FeedbackForm({ matchId = null, defaultType = "suggestion", compact = false }: FeedbackFormProps) {
+export function FeedbackForm({
+  matchId = null,
+  defaultType = "suggestion",
+  compact = false,
+  onCancel,
+  onSubmitted,
+}: FeedbackFormProps) {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>(defaultType);
   const [feedbackText, setFeedbackText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -27,7 +35,7 @@ export function FeedbackForm({ matchId = null, defaultType = "suggestion", compa
     <div className={compact ? "space-y-3" : "space-y-4 rounded-[1.75rem] border border-line bg-white/70 p-5"}>
       <div className="space-y-1">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Beta feedback</p>
-        <p className="text-sm leading-6 text-ink/64">Tell us what broke or what would make this smoother.</p>
+        <p className="text-sm leading-6 text-ink/64">A quick note is optional. Type alone is enough.</p>
       </div>
 
       {success ? (
@@ -49,11 +57,11 @@ export function FeedbackForm({ matchId = null, defaultType = "suggestion", compa
         </Select>
       </Field>
 
-      <Field label="Feedback">
+      <Field label="Note" hint="Optional">
         <Textarea
           value={feedbackText}
           onChange={(event) => setFeedbackText(event.target.value)}
-          placeholder="What happened?"
+          placeholder="What happened? Optional."
         />
       </Field>
 
@@ -63,32 +71,40 @@ export function FeedbackForm({ matchId = null, defaultType = "suggestion", compa
         </Notice>
       ) : null}
 
-      <Button
-        variant="secondary"
-        className="w-full"
-        disabled={submitting || feedbackText.trim().length === 0}
-        onClick={async () => {
-          setSubmitting(true);
-          setError(null);
-          setSuccess(false);
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button
+          variant="secondary"
+          className="w-full"
+          disabled={submitting}
+          onClick={async () => {
+            setSubmitting(true);
+            setError(null);
+            setSuccess(false);
 
-          try {
-            await apiPost("/api/feedback", {
-              feedbackType,
-              feedbackText,
-              matchId,
-            });
-            setFeedbackText("");
-            setSuccess(true);
-          } catch (caughtError) {
-            setError(caughtError instanceof Error ? caughtError.message : "Unable to submit feedback.");
-          } finally {
-            setSubmitting(false);
-          }
-        }}
-      >
-        {submitting ? "Sending..." : "Send feedback"}
-      </Button>
+            try {
+              await apiPost("/api/feedback", {
+                feedbackType,
+                feedbackText,
+                matchId,
+              });
+              setFeedbackText("");
+              setSuccess(true);
+              onSubmitted?.();
+            } catch (caughtError) {
+              setError(caughtError instanceof Error ? caughtError.message : "Unable to submit feedback.");
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {submitting ? "Sending..." : "Send"}
+        </Button>
+        {onCancel ? (
+          <Button variant="ghost" className="w-full" disabled={submitting} onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }
