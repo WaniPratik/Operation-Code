@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { EchoMark } from "@/components/brand/echo-mark";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
@@ -8,7 +9,18 @@ import { useGuestSession } from "@/features/session/guest-session-provider";
 
 export function LandingPage() {
   const { session, loading, error } = useGuestSession();
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
   const primaryHref = session?.onboardingCompleted ? "/queue" : "/onboarding";
+
+  useEffect(() => {
+    const authStatus = new URLSearchParams(window.location.search).get("auth");
+
+    if (authStatus === "google-setup-needed") {
+      setAuthNotice("Google sign-in is not configured yet. Guest mode is ready.");
+    } else if (authStatus === "google-unavailable") {
+      setAuthNotice("Google sign-in is unavailable right now. Guest mode is ready.");
+    }
+  }, []);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -45,6 +57,12 @@ export function LandingPage() {
             </Notice>
           ) : null}
 
+          {authNotice ? (
+            <Notice title="Google is optional" tone="info">
+              {authNotice}
+            </Notice>
+          ) : null}
+
           <div className="space-y-3">
             <Link
               href={primaryHref}
@@ -68,6 +86,18 @@ export function LandingPage() {
                 ? "Setting up your private guest session."
                 : "Guest stays instant. Google is optional for beta testers."}
             </p>
+          </div>
+
+          <div className="rounded-3xl border border-panel/20 bg-panel/10 p-4 text-left text-sm leading-6 text-panel/86">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-panel/86">
+              Beta rules
+            </p>
+            <ul className="mt-2 space-y-1">
+              <li>18+ only.</li>
+              <li>Be respectful. Harassment, sexual content, and spam/bot behavior can be reported.</li>
+              <li>Report & Skip and Block are available during and after calls.</li>
+              <li>This is a beta, so bugs may happen.</li>
+            </ul>
           </div>
         </div>
       </Card>

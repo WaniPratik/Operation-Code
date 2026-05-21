@@ -3,8 +3,7 @@ export const MINIMUM_AGE = 18;
 export const REPORT_REASONS = [
   "harassment",
   "sexual content",
-  "hate or abuse",
-  "spam or scam",
+  "spam/bot",
   "underage concern",
   "other",
 ] as const;

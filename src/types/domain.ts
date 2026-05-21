@@ -87,6 +87,10 @@ export interface AdminUserView {
   onboardingCompleted: boolean;
   onboardingCompletedAt: string | null;
   createdAt: string;
+  reportsReceived?: number;
+  blocksReceived?: number;
+  activeCooldownReason?: string | null;
+  activeCooldownExpiresAt?: string | null;
 }
 
 export interface AdminMatchView {

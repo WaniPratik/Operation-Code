@@ -309,6 +309,12 @@ export function QueuePage() {
                     toggleFilter(excludedCountries, setExcludedCountries, countryCode)
                   }
                 />
+                <div className="rounded-2xl border border-line bg-panel/70 p-4">
+                  <p className="font-medium text-ink">More filters</p>
+                  <p className="mt-1 text-sm text-ink/70">
+                    Gender, language, and premium cohort filters are coming later. They are not active in this beta.
+                  </p>
+                </div>
               </div>
             </details>
 

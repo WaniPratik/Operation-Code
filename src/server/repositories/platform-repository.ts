@@ -1106,7 +1106,90 @@ export class PlatformRepository {
       onboardingCompleted: false,
       onboardingCompletedAt: null,
       createdAt: "",
+      reportsReceived: 0,
+      blocksReceived: 0,
+      activeCooldownReason: null,
+      activeCooldownExpiresAt: null,
     };
+  }
+
+  private async getAdminTrustSignals(userIds: string[]) {
+    const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
+    const emptySignals = new Map<string, Pick<
+      AdminUserView,
+      "reportsReceived" | "blocksReceived" | "activeCooldownReason" | "activeCooldownExpiresAt"
+    >>();
+
+    if (uniqueUserIds.length === 0) {
+      return emptySignals;
+    }
+
+    const [reportsResult, blocksResult, cooldownsResult] = await Promise.all([
+      this.supabase
+        .from("reports")
+        .select("reported_user_id")
+        .in("reported_user_id", uniqueUserIds),
+      this.supabase
+        .from("blocks")
+        .select("blocked_user_id")
+        .in("blocked_user_id", uniqueUserIds),
+      this.supabase
+        .from("beta_user_cooldowns")
+        .select("user_id, reason, expires_at")
+        .in("user_id", uniqueUserIds)
+        .gt("expires_at", new Date().toISOString()),
+    ]);
+
+    if (reportsResult.error) {
+      throw reportsResult.error;
+    }
+
+    if (blocksResult.error) {
+      throw blocksResult.error;
+    }
+
+    if (cooldownsResult.error) {
+      throw cooldownsResult.error;
+    }
+
+    for (const userId of uniqueUserIds) {
+      emptySignals.set(userId, {
+        reportsReceived: 0,
+        blocksReceived: 0,
+        activeCooldownReason: null,
+        activeCooldownExpiresAt: null,
+      });
+    }
+
+    for (const report of reportsResult.data ?? []) {
+      const userId = report.reported_user_id as string;
+      const signal = emptySignals.get(userId);
+
+      if (signal) {
+        signal.reportsReceived = (signal.reportsReceived ?? 0) + 1;
+      }
+    }
+
+    for (const block of blocksResult.data ?? []) {
+      const userId = block.blocked_user_id as string;
+      const signal = emptySignals.get(userId);
+
+      if (signal) {
+        signal.blocksReceived = (signal.blocksReceived ?? 0) + 1;
+      }
+    }
+
+    for (const cooldown of cooldownsResult.data ?? []) {
+      const userId = cooldown.user_id as string;
+      const signal = emptySignals.get(userId);
+
+      if (signal) {
+        signal.activeCooldownReason = cooldown.reason as string;
+        signal.activeCooldownExpiresAt = cooldown.expires_at as string;
+      }
+    }
+
+    return emptySignals;
   }
 
   private async getAdminUserSummaries(userIds: string[]) {
@@ -1128,6 +1211,8 @@ export class PlatformRepository {
       throw error;
     }
 
+    const signals = await this.getAdminTrustSignals(uniqueUserIds);
+
     return new Map(
       (data ?? []).map((row) => [
         row.user_id as string,
@@ -1139,6 +1224,7 @@ export class PlatformRepository {
           onboardingCompleted: Boolean(row.onboarding_completed_at),
           onboardingCompletedAt: row.onboarding_completed_at as string | null,
           createdAt: row.created_at as string,
+          ...(signals.get(row.user_id as string) ?? {}),
         } satisfies AdminUserView,
       ]),
     );
@@ -1329,6 +1415,8 @@ export class PlatformRepository {
       throw error;
     }
 
+    const signals = await this.getAdminTrustSignals((data ?? []).map((row) => row.user_id as string));
+
     return (data ?? []).map((row) => ({
       userId: row.user_id,
       handle: row.anonymous_handle,
@@ -1337,6 +1425,7 @@ export class PlatformRepository {
       onboardingCompleted: Boolean(row.onboarding_completed_at),
       onboardingCompletedAt: row.onboarding_completed_at,
       createdAt: row.created_at,
+      ...(signals.get(row.user_id as string) ?? {}),
     }));
   }
 

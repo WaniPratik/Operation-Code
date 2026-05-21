@@ -54,12 +54,32 @@ function getLinkedMatchTone(status: "matched" | "ended" | null) {
 }
 
 function UserSummary({ user }: { user: AdminUserView }) {
+  const hasTrustSignals =
+    Boolean(user.reportsReceived) ||
+    Boolean(user.blocksReceived) ||
+    Boolean(user.activeCooldownReason);
+
   return (
     <div className="rounded-2xl border border-line/80 bg-white/80 p-3 text-sm">
       <p className="font-medium text-ink">{user.handle}</p>
       <p className="mt-1 font-mono text-xs text-ink/60">{user.userId}</p>
       <p className="mt-2 text-ink/72">{user.countryCode ?? "Country unavailable"}</p>
       <p className="text-ink/60">{user.ageConfirmed ? "18+ attested" : "18+ not attested"}</p>
+      {hasTrustSignals ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {user.reportsReceived ? (
+            <StatusBadge tone="warning">{user.reportsReceived} reports received</StatusBadge>
+          ) : null}
+          {user.blocksReceived ? (
+            <StatusBadge tone="warning">{user.blocksReceived} blocks received</StatusBadge>
+          ) : null}
+          {user.activeCooldownReason ? (
+            <StatusBadge tone="danger">
+              cooldown: {user.activeCooldownReason}
+            </StatusBadge>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

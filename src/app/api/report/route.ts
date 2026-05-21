@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const session = await sessionService.requireGuestSession();
     const body = (await request.json().catch(() => ({}))) as {
       matchId?: string;
-      reason?: "harassment" | "sexual content" | "hate or abuse" | "spam or scam" | "underage concern" | "other";
+      reason?: "harassment" | "sexual content" | "spam/bot" | "underage concern" | "other";
       details?: string;
     };
 
