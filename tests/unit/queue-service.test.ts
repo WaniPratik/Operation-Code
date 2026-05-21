@@ -114,7 +114,7 @@ describe("QueueService", () => {
     });
     expect(repository.cleanupStaleQueueEntries).toHaveBeenCalled();
     expect(repository.claimTieredMatchLocally).toHaveBeenCalledWith("user_1");
-    expect(audit.write).toHaveBeenCalledTimes(3);
+    expect(audit.write).toHaveBeenCalledTimes(4);
   });
 
   it("keeps queue join idempotent when the user already has an active queued entry", async () => {
@@ -194,7 +194,7 @@ describe("QueueService", () => {
 
     expect(result).toEqual(queuedSnapshot);
     expect(repository.claimTieredMatchLocally).toHaveBeenCalledWith("user_1");
-    expect(audit.write).toHaveBeenCalledTimes(1);
+    expect(audit.write).toHaveBeenCalledTimes(2);
   });
 
   it("blocks rapid queue re-entry for a short cooldown window", async () => {
@@ -228,6 +228,42 @@ describe("QueueService", () => {
     ).rejects.toMatchObject({
       statusCode: 429,
       message: expect.stringContaining("Please wait"),
+    });
+    expect(repository.ensureActiveQueueEntry).not.toHaveBeenCalled();
+  });
+
+  it("blocks queue join when beta safety cooldown is active", async () => {
+    const repository = {
+      getProfile: vi.fn().mockResolvedValue({
+        onboarding_completed_at: "2026-04-23T00:00:00.000Z",
+        country_code: null,
+      }),
+      getQueueSnapshot: vi.fn().mockResolvedValue(idleSnapshot),
+      getActiveUserCooldown: vi.fn().mockResolvedValue({
+        user_id: "user_1",
+        reason: "repeated_reports",
+        expires_at: "2026-04-23T00:10:00.000Z",
+      }),
+      getLatestQueueExit: vi.fn(),
+      ensureActiveQueueEntry: vi.fn(),
+      cleanupStaleQueueEntries: vi.fn(),
+      getActiveQueueEntry: vi.fn(),
+      claimTieredMatch: vi.fn(),
+      claimTieredMatchLocally: vi.fn(),
+    };
+    const queueService = new QueueService(
+      repository as never,
+      { write: vi.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await expect(
+      queueService.joinQueue("user_1", {
+        preferredCountries: [],
+        excludedCountries: [],
+      }),
+    ).rejects.toMatchObject({
+      statusCode: 429,
+      message: expect.stringContaining("cooling down"),
     });
     expect(repository.ensureActiveQueueEntry).not.toHaveBeenCalled();
   });

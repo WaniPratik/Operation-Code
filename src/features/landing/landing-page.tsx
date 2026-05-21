@@ -43,10 +43,16 @@ export function LandingPage() {
             >
               Jump In
             </Link>
+            <a
+              href="/api/auth/google"
+              className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-ink/62 transition duration-150 hover:bg-sand/70 hover:text-ink active:translate-y-px active:scale-[0.99] sm:w-auto"
+            >
+              Sign in with Google
+            </a>
             <p className="text-sm text-ink/62">
               {loading
                 ? "Setting up your private guest session."
-                : "One quick 18+ check, then you’re in."}
+                : "Guest stays instant. Google is optional for beta testers."}
             </p>
           </div>
         </div>

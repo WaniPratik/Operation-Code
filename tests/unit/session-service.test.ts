@@ -117,6 +117,26 @@ describe("SessionService", () => {
     expect(repository.findSessionByTokenHash).toHaveBeenCalledWith("hashed:plain_token_2");
   });
 
+  it("blocks excessive guest session creation from the same fingerprint", async () => {
+    const repository = {
+      createGuestUserSession: vi.fn(),
+      incrementRateLimit: vi.fn().mockResolvedValue(13),
+    };
+    const service = new SessionService(repository as never, {
+      createGuestSessionToken: vi.fn().mockReturnValue("plain_token_2"),
+      hashGuestSessionToken: vi.fn().mockReturnValue("hashed_token_2"),
+      readGuestSessionTokenFromCookies: vi.fn().mockResolvedValue(null),
+      createRequestFingerprintHash: vi.fn().mockResolvedValue("fingerprint_2"),
+      detectRequestCountryCode: vi.fn().mockResolvedValue("CA"),
+    });
+
+    await expect(service.ensureGuestSession()).rejects.toMatchObject({
+      statusCode: 429,
+      message: expect.stringContaining("Too many guest sessions"),
+    });
+    expect(repository.createGuestUserSession).not.toHaveBeenCalled();
+  });
+
   it("completes onboarding when a detected country is available", async () => {
     const onboardedRow = buildSessionRow({
       profile: {

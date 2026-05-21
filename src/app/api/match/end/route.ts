@@ -1,11 +1,13 @@
 import { MatchService } from "@/server/services/match-service";
 import { QueueService } from "@/server/services/queue-service";
 import { SessionService } from "@/server/services/session-service";
+import { AuditService } from "@/server/services/audit-service";
 import { getErrorMessage, getErrorStatus, jsonError, jsonOk } from "@/server/http";
 
 const sessionService = new SessionService();
 const matchService = new MatchService();
 const queueService = new QueueService();
+const auditService = new AuditService();
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +34,15 @@ export async function POST(request: Request) {
       const nextQueue = await queueService.joinQueue(session.userId, {
         preferredCountries: body.preferredCountries ?? queue.filters.preferredCountries,
         excludedCountries: body.excludedCountries ?? queue.filters.excludedCountries,
+      });
+      await auditService.write({
+        actorUserId: session.userId,
+        matchId: body.matchId,
+        eventName: "end_find_next",
+        metadata: {
+          reason: body.reason ?? "user_end",
+          nextQueueEntryId: nextQueue.queueEntryId,
+        },
       });
 
       return jsonOk({ queue: nextQueue });

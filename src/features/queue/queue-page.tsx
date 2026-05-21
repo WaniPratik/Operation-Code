@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CountryFilterPicker } from "@/components/ui/country-filter-picker";
+import { FeedbackForm } from "@/components/ui/feedback-form";
 import { Notice } from "@/components/ui/notice";
 import {
   apiDelete,
@@ -243,29 +244,35 @@ export function QueuePage() {
         ) : null}
 
         {error && !needsSessionRecovery ? (
-          <Notice title="Queue update failed" tone="warning">
-            {error}
-            <div className="mt-3">
-              <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void loadQueueState()}>
-                Try Again
-              </Button>
-            </div>
-          </Notice>
+          <div className="space-y-4">
+            <Notice title="Queue update failed" tone="warning">
+              {error}
+              <div className="mt-3">
+                <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void loadQueueState()}>
+                  Try Again
+                </Button>
+              </div>
+            </Notice>
+            <FeedbackForm defaultType="matching issue" compact />
+          </div>
         ) : null}
 
         {liveUpdateError ? (
-          <Notice title="Connection dropped." tone="warning">
-            Live updates paused for a moment. We’re still retrying in the background.
-            <div className="mt-3">
-              <Button
-                variant="ghost"
-                className="w-full sm:w-auto"
-                onClick={() => void loadQueueState({ background: true })}
-              >
-                Try Again
-              </Button>
-            </div>
-          </Notice>
+          <div className="space-y-4">
+            <Notice title="Connection dropped." tone="warning">
+              Live updates paused for a moment. We’re still retrying in the background.
+              <div className="mt-3">
+                <Button
+                  variant="ghost"
+                  className="w-full sm:w-auto"
+                  onClick={() => void loadQueueState({ background: true })}
+                >
+                  Try Again
+                </Button>
+              </div>
+            </Notice>
+            <FeedbackForm defaultType="matching issue" compact />
+          </div>
         ) : null}
 
         {!session?.onboardingCompleted ? (

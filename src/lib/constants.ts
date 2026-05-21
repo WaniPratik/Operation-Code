@@ -9,6 +9,15 @@ export const REPORT_REASONS = [
   "other",
 ] as const;
 
+export const FEEDBACK_TYPES = [
+  "bug",
+  "suggestion",
+  "audio issue",
+  "matching issue",
+  "safety issue",
+  "other",
+] as const;
+
 export const COUNTRY_OPTIONS = [
   { code: "US", name: "United States" },
   { code: "CA", name: "Canada" },
@@ -39,10 +48,18 @@ export const MODERATION_METADATA_FIELDS = [
 ] as const;
 
 export const AUDIT_EVENT_NAMES = [
+  "session_created",
+  "onboarding_completed",
   "queue_join",
+  "queue_joined",
   "queue_leave",
   "match_created",
   "match_ended",
+  "voice_connected",
+  "voice_failed",
+  "end_find_next",
   "report_submitted",
   "user_blocked",
+  "block_submitted",
+  "feedback_submitted",
 ] as const;

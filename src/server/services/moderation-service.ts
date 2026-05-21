@@ -47,6 +47,21 @@ export class ModerationService {
       },
     });
 
+    if ("countRecentReportsAgainstUser" in this.repository && "setUserCooldown" in this.repository) {
+      const recentReportCount = await this.repository.countRecentReportsAgainstUser({
+        userId: targetUserId,
+        since: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      });
+
+      if (recentReportCount >= 3) {
+        await this.repository.setUserCooldown({
+          userId: targetUserId,
+          reason: "repeated_reports",
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        });
+      }
+    }
+
     return report;
   }
 
@@ -74,6 +89,15 @@ export class ModerationService {
       targetUserId,
       matchId: match.id,
       eventName: "user_blocked",
+      metadata: {
+        cooldownLoggedOnly: true,
+      },
+    });
+    await this.audit.write({
+      actorUserId: userId,
+      targetUserId,
+      matchId: match.id,
+      eventName: "block_submitted",
       metadata: {
         cooldownLoggedOnly: true,
       },

@@ -40,6 +40,14 @@ export class QueueService {
   ) {}
 
   private async assertQueueCooldown(userId: string) {
+    if ("getActiveUserCooldown" in this.repository) {
+      const activeUserCooldown = await this.repository.getActiveUserCooldown(userId);
+
+      if (activeUserCooldown) {
+        throw createStatusError("Your account is cooling down for beta safety. Please try again shortly.", 429);
+      }
+    }
+
     const latestQueueExit = await this.repository.getLatestQueueExit(userId);
 
     if (!latestQueueExit?.exited_at) {
@@ -96,6 +104,15 @@ export class QueueService {
       await this.audit.write({
         actorUserId: userId,
         eventName: "queue_join",
+        metadata: {
+          queueEntryId: queueEntry.id,
+          preferredCountries: normalizedFilters.preferredCountries,
+          excludedCountries: normalizedFilters.excludedCountries,
+        },
+      });
+      await this.audit.write({
+        actorUserId: userId,
+        eventName: "queue_joined",
         metadata: {
           queueEntryId: queueEntry.id,
           preferredCountries: normalizedFilters.preferredCountries,

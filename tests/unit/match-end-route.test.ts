@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const requireGuestSession = vi.fn();
 const endMatch = vi.fn();
 const joinQueue = vi.fn();
+const writeAudit = vi.fn();
 
 vi.mock("@/server/services/session-service", () => ({
   SessionService: vi.fn().mockImplementation(() => ({
@@ -19,6 +20,12 @@ vi.mock("@/server/services/match-service", () => ({
 vi.mock("@/server/services/queue-service", () => ({
   QueueService: vi.fn().mockImplementation(() => ({
     joinQueue,
+  })),
+}));
+
+vi.mock("@/server/services/audit-service", () => ({
+  AuditService: vi.fn().mockImplementation(() => ({
+    write: writeAudit,
   })),
 }));
 
@@ -122,6 +129,13 @@ describe("POST /api/match/end", () => {
       preferredCountries: [],
       excludedCountries: [],
     });
+    expect(writeAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: "user_1",
+        matchId: "match_1",
+        eventName: "end_find_next",
+      }),
+    );
   });
 
   it("still returns the ended queue state when next search is cooling down", async () => {

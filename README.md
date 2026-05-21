@@ -141,6 +141,7 @@ Fill in the Supabase values plus these LiveKit values before testing voice:
 
 - `NEXT_PUBLIC_APP_URL`: public app origin such as `http://localhost:3000` or `https://beta.example.com`
 - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project root URL such as `https://your-project.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: optional Supabase anon/publishable key used only for the Google sign-in foundation
 - `SUPABASE_SERVICE_ROLE_KEY`: server-side `service_role` key from Supabase
 - `NEXT_PUBLIC_LIVEKIT_URL`: websocket URL, such as `wss://your-project.livekit.cloud` or `ws://localhost:7880`
 - `LIVEKIT_API_KEY`: server-side API key used to mint room tokens
@@ -189,6 +190,12 @@ The main MVP routes are:
 - `/admin` (password-protected internal moderation dashboard)
 - `/api/health` (safe readiness check for local or staging verification)
 
+Optional Google sign-in setup:
+
+- Guest chat does not require Google sign-in and remains the primary beta path.
+- To test the Google button, add `NEXT_PUBLIC_SUPABASE_ANON_KEY`, enable Google OAuth in Supabase Auth, and add the app callback URL in the Supabase dashboard.
+- If Google OAuth is not configured, the button safely returns to the landing page and does not affect guest access.
+
 ## Startup Validation
 
 The server now validates configuration more clearly so local and staging mistakes fail fast with founder-readable messages.
@@ -207,6 +214,7 @@ Before inviting testers into staging:
 1. Set these exact variables in the staging environment:
    - `NEXT_PUBLIC_APP_URL`
    - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` if you want the Google sign-in button to start Supabase OAuth
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `NEXT_PUBLIC_LIVEKIT_URL`
    - `LIVEKIT_API_KEY`
@@ -223,6 +231,7 @@ Supabase schema files live in:
 - [supabase/migrations/202604140003_tiered_matching.sql](supabase/migrations/202604140003_tiered_matching.sql)
 - [supabase/migrations/202604140004_atomic_match_claiming.sql](supabase/migrations/202604140004_atomic_match_claiming.sql)
 - [supabase/migrations/202604290001_supabase_security_hardening.sql](supabase/migrations/202604290001_supabase_security_hardening.sql)
+- [supabase/migrations/202605210001_beta_feedback_auth_controls.sql](supabase/migrations/202605210001_beta_feedback_auth_controls.sql)
 - [supabase/seed.sql](supabase/seed.sql)
 
 These SQL files now define the backend persistence layer expected by the route handlers.

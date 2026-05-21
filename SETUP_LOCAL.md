@@ -95,6 +95,7 @@ You need these values from your Supabase project and your LiveKit setup:
 
 - `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` if you want to test the optional Google sign-in entry point
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_LIVEKIT_URL`
 - `LIVEKIT_API_KEY`
@@ -104,6 +105,7 @@ You need these values from your Supabase project and your LiveKit setup:
 What each one means:
 
 - `NEXT_PUBLIC_SUPABASE_URL`: the web address of your Supabase project
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: the public Supabase anon or publishable key used only to start Google sign-in
 - `SUPABASE_SERVICE_ROLE_KEY`: a powerful backend key used by the server
 - `NEXT_PUBLIC_APP_URL`: the local address where the app runs, usually `http://localhost:3000`
 - `NEXT_PUBLIC_LIVEKIT_URL`: the LiveKit websocket address, usually `wss://...` for LiveKit Cloud or `ws://localhost:7880` for a local LiveKit server
@@ -116,6 +118,7 @@ Your `.env.local` should look like this:
 ```bash
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_LIVEKIT_URL=wss://your-project.livekit.cloud
 LIVEKIT_API_KEY=your-livekit-api-key
@@ -139,6 +142,7 @@ In Supabase:
 3. Go to `API`
 4. Copy:
    - the project URL
+   - the `anon` or publishable key if you want to test Google sign-in
    - the `service_role` key
 
 In LiveKit:
@@ -155,8 +159,15 @@ Paste all of those into `.env.local`
 Founder-safe reminder:
 
 - `NEXT_PUBLIC_SUPABASE_URL` must be the project root URL like `https://your-project.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is optional for the anonymous guest flow; add it only when you are ready to test Supabase Google OAuth
 - `NEXT_PUBLIC_LIVEKIT_URL` must be the websocket server origin like `wss://your-project.livekit.cloud`
 - do not leave any `.env.example` placeholder value unchanged, or the app will now fail readiness checks on purpose
+
+Optional Google sign-in reminder:
+
+- Guest access works without Google.
+- To make Google sign-in complete, enable Google as a provider in Supabase Auth and add the correct callback URL in the Supabase dashboard.
+- Until that dashboard setup is done, use `Continue as guest` for beta testing.
 
 ## 8. Run Database Migrations
 
@@ -167,6 +178,7 @@ The project includes SQL migration files in:
 - `supabase/migrations/202604140003_tiered_matching.sql`
 - `supabase/migrations/202604140004_atomic_match_claiming.sql`
 - `supabase/migrations/202604290001_supabase_security_hardening.sql`
+- `supabase/migrations/202605210001_beta_feedback_auth_controls.sql`
 
 There are two common ways to run them.
 
@@ -189,6 +201,7 @@ Run them in this exact order:
 3. `202604140003_tiered_matching.sql`
 4. `202604140004_atomic_match_claiming.sql`
 5. `202604290001_supabase_security_hardening.sql`
+6. `202605210001_beta_feedback_auth_controls.sql`
 
 ### Option B: Use the Supabase CLI
 
@@ -200,7 +213,7 @@ Security note:
 
 - This MVP does not read or write Supabase directly from the browser.
 - Do not add public table access for `anon` or `authenticated` just to make local testing easier.
-- Do not add `NEXT_PUBLIC_SUPABASE_ANON_KEY` for product flows in this repo.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is only for the optional Supabase Google OAuth entry point; product data still flows through server routes.
 - The migration `202604290001_supabase_security_hardening.sql` is the repo-owned source of truth for RLS, locked-down table access, and private matching RPC permissions.
 - If a future Supabase project shows security warnings, re-run the repo migrations instead of patching permissions only in the dashboard.
 

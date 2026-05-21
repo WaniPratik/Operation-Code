@@ -120,6 +120,58 @@ describe("ModerationService", () => {
         eventName: "user_blocked",
       }),
     );
+    expect(audit.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: "user_a",
+        targetUserId: "user_b",
+        matchId: "match_1",
+        eventName: "block_submitted",
+      }),
+    );
+    expect(audit.write).toHaveBeenCalledTimes(2);
+  });
+
+  it("adds a temporary queue cooldown after repeated recent reports", async () => {
+    const repository = {
+      getMatchById: vi.fn().mockResolvedValue({
+        id: "match_1",
+        session_id: "session_1",
+        status: "ended",
+        user_a_id: "user_a",
+        user_b_id: "user_b",
+      }),
+      createReport: vi.fn().mockResolvedValue({
+        id: "report_1",
+      }),
+      countRecentReportsAgainstUser: vi.fn().mockResolvedValue(3),
+      setUserCooldown: vi.fn().mockResolvedValue(undefined),
+    };
+    const audit = {
+      write: vi.fn().mockResolvedValue(undefined),
+    };
+    const matchService = {
+      endMatch: vi.fn(),
+    };
+
+    const service = new ModerationService(repository as never, audit as never, matchService as never);
+
+    await service.submitReport("user_a", {
+      matchId: "match_1",
+      reason: "harassment",
+      details: "Repeated report.",
+    });
+
+    expect(repository.countRecentReportsAgainstUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "user_b",
+      }),
+    );
+    expect(repository.setUserCooldown).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "user_b",
+        reason: "repeated_reports",
+      }),
+    );
   });
 
   it("rejects blocks from non-participants with a 403 status", async () => {

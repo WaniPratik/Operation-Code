@@ -18,7 +18,9 @@ import type {
   AdminMatchView,
   AdminReportView,
   AdminUserView,
+  AnalyticsSummaryView,
   AuditEventView,
+  FeedbackView,
 } from "@/types/domain";
 
 interface AdminPayload {
@@ -27,6 +29,8 @@ interface AdminPayload {
   users: AdminUserView[];
   blocks: AdminBlockView[];
   auditLogs: AuditEventView[];
+  feedback: FeedbackView[];
+  analytics: AnalyticsSummaryView[];
 }
 
 function formatDate(value: string | null) {
@@ -73,6 +77,8 @@ export function AdminPlaceholderPage() {
     users: [],
     blocks: [],
     auditLogs: [],
+    feedback: [],
+    analytics: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,12 +111,14 @@ export function AdminPlaceholderPage() {
 
       const suffix = query.toString() ? `?${query.toString()}` : "";
 
-      const [reports, matches, users, blocks, auditLogs] = await Promise.all([
+      const [reports, matches, users, blocks, auditLogs, feedback, analytics] = await Promise.all([
         apiGet<{ reports: AdminReportView[] }>(`/api/admin/reports${suffix}`),
         apiGet<{ matches: AdminMatchView[] }>(`/api/admin/matches${suffix}`),
         apiGet<{ users: AdminUserView[] }>(`/api/admin/users${suffix}`),
         apiGet<{ blocks: AdminBlockView[] }>(`/api/admin/blocks${suffix}`),
         apiGet<{ auditLogs: AuditEventView[] }>(`/api/admin/audit-logs${suffix}`),
+        apiGet<{ feedback: FeedbackView[] }>(`/api/admin/feedback${suffix}`),
+        apiGet<{ analytics: AnalyticsSummaryView[] }>(`/api/admin/analytics${suffix}`),
       ]);
 
       setData({
@@ -119,6 +127,8 @@ export function AdminPlaceholderPage() {
         users: users.users,
         blocks: blocks.blocks,
         auditLogs: auditLogs.auditLogs,
+        feedback: feedback.feedback,
+        analytics: analytics.analytics,
       });
       setSessionExpired(false);
     } catch (caughtError) {
@@ -147,6 +157,8 @@ export function AdminPlaceholderPage() {
     data.matches.length === 0 &&
     data.users.length === 0 &&
     data.blocks.length === 0 &&
+    data.feedback.length === 0 &&
+    data.analytics.length === 0 &&
     data.auditLogs.length === 0;
 
   return (
@@ -364,6 +376,59 @@ export function AdminPlaceholderPage() {
                   </div>
                 );
               })
+            )}
+          </div>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <Card className="space-y-4 p-6">
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Beta feedback</p>
+            <StatusBadge tone={data.feedback.length > 0 ? "warning" : "neutral"}>
+              {data.feedback.length} items
+            </StatusBadge>
+          </div>
+          <div className="space-y-4 text-sm">
+            {data.feedback.length === 0 ? (
+              <p className="text-ink/60">Nothing here yet.</p>
+            ) : (
+              data.feedback.map((feedback) => (
+                <div key={feedback.feedbackId} className="rounded-3xl bg-sand/45 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium">{feedback.feedbackType}</p>
+                    {feedback.matchId ? <StatusBadge tone="neutral">match linked</StatusBadge> : null}
+                  </div>
+                  <p className="mt-2 text-ink/78">{feedback.feedbackText}</p>
+                  <p className="mt-3 font-mono text-xs text-ink/60">{feedback.feedbackId}</p>
+                  <p className="mt-2 text-ink/60">
+                    User {feedback.userId ?? "unknown"} · Match {feedback.matchId ?? "none"} ·{" "}
+                    {formatDate(feedback.createdAt)}
+                  </p>
+                  {feedback.userAgent ? (
+                    <p className="mt-2 break-words text-xs text-ink/50">{feedback.userAgent}</p>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <Card className="space-y-4 p-6">
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Beta analytics</p>
+            <StatusBadge tone="neutral">{data.analytics.length} events</StatusBadge>
+          </div>
+          <div className="grid gap-3 text-sm sm:grid-cols-2">
+            {data.analytics.length === 0 ? (
+              <p className="text-ink/60">Nothing here yet.</p>
+            ) : (
+              data.analytics.map((event) => (
+                <div key={event.eventName} className="rounded-2xl border border-line/70 bg-white/80 p-4">
+                  <p className="font-mono text-xs text-ink/56">{event.eventName}</p>
+                  <p className="mt-2 font-heading text-3xl font-semibold text-ink">{event.count}</p>
+                </div>
+              ))
             )}
           </div>
         </Card>

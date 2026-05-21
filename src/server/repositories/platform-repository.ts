@@ -1,5 +1,5 @@
 import { createServiceSupabaseClient } from "@/server/supabase/service";
-import type { AdminBlockView, AdminMatchView, AdminQuery, AdminReportView, AdminUserView, AuditEventView, MatchView, QueueFilters, QueueStatusView, ReportView } from "@/types/domain";
+import type { AdminBlockView, AdminMatchView, AdminQuery, AdminReportView, AdminUserView, AnalyticsSummaryView, AuditEventView, FeedbackType, FeedbackView, MatchView, QueueFilters, QueueStatusView, ReportView } from "@/types/domain";
 
 type SupabaseClient = ReturnType<typeof createServiceSupabaseClient>;
 
@@ -375,6 +375,91 @@ export class PlatformRepository {
     }
 
     return data;
+  }
+
+  async incrementRateLimit(input: {
+    action: string;
+    rateKey: string;
+    windowMs: number;
+  }) {
+    const windowStartedAt = new Date(
+      Math.floor(Date.now() / input.windowMs) * input.windowMs,
+    ).toISOString();
+
+    const { data: existing, error: existingError } = await this.supabase
+      .from("beta_rate_limits")
+      .select("id, count")
+      .eq("action", input.action)
+      .eq("rate_key", input.rateKey)
+      .eq("window_started_at", windowStartedAt)
+      .maybeSingle<{ id: string; count: number }>();
+
+    if (existingError) {
+      throw existingError;
+    }
+
+    if (existing) {
+      const nextCount = existing.count + 1;
+      const { error } = await this.supabase
+        .from("beta_rate_limits")
+        .update({
+          count: nextCount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+
+      if (error) {
+        throw error;
+      }
+
+      return nextCount;
+    }
+
+    const { error } = await this.supabase.from("beta_rate_limits").insert({
+      action: input.action,
+      rate_key: input.rateKey,
+      window_started_at: windowStartedAt,
+      count: 1,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return 1;
+  }
+
+  async getActiveUserCooldown(userId: string) {
+    const { data, error } = await this.supabase
+      .from("beta_user_cooldowns")
+      .select("user_id, reason, expires_at")
+      .eq("user_id", userId)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle<{ user_id: string; reason: string; expires_at: string }>();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  async setUserCooldown(input: { userId: string; reason: string; expiresAt: string }) {
+    const { error } = await this.supabase.from("beta_user_cooldowns").upsert(
+      {
+        user_id: input.userId,
+        reason: input.reason,
+        expires_at: input.expiresAt,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      },
+    );
+
+    if (error) {
+      throw error;
+    }
   }
 
   async getActiveQueueEntry(userId: string) {
@@ -894,6 +979,56 @@ export class PlatformRepository {
     }
   }
 
+  async countRecentReportsAgainstUser(input: { userId: string; since: string }) {
+    const { count, error } = await this.supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("reported_user_id", input.userId)
+      .gte("created_at", input.since);
+
+    if (error) {
+      throw error;
+    }
+
+    return count ?? 0;
+  }
+
+  async createFeedback(input: {
+    feedbackType: FeedbackType;
+    feedbackText: string;
+    userId: string | null;
+    matchId: string | null;
+    userAgent: string | null;
+    fingerprintHash: string | null;
+  }) {
+    const { data, error } = await this.supabase
+      .from("feedback_submissions")
+      .insert({
+        feedback_type: input.feedbackType,
+        feedback_text: input.feedbackText,
+        user_id: input.userId,
+        match_id: input.matchId,
+        user_agent: input.userAgent,
+        fingerprint_hash: input.fingerprintHash,
+      })
+      .select("id, feedback_type, feedback_text, user_id, match_id, user_agent, created_at")
+      .single<{
+        id: string;
+        feedback_type: FeedbackType;
+        feedback_text: string;
+        user_id: string | null;
+        match_id: string | null;
+        user_agent: string | null;
+        created_at: string;
+      }>();
+
+    if (error) {
+      throw error;
+    }
+
+    return this.mapFeedbackRecord(data);
+  }
+
   async writeAuditEvent(input: {
     actorUserId: string;
     targetUserId?: string | null;
@@ -1288,6 +1423,99 @@ export class PlatformRepository {
       createdAt: row.created_at,
       metadata: (row.metadata ?? {}) as Record<string, unknown>,
     }));
+  }
+
+  private mapFeedbackRecord(record: {
+    id: string;
+    feedback_type: FeedbackType;
+    feedback_text: string;
+    user_id: string | null;
+    match_id: string | null;
+    user_agent: string | null;
+    created_at: string;
+  }): FeedbackView {
+    return {
+      feedbackId: record.id,
+      feedbackType: record.feedback_type,
+      feedbackText: record.feedback_text,
+      userId: record.user_id,
+      matchId: record.match_id,
+      userAgent: record.user_agent,
+      createdAt: record.created_at,
+    };
+  }
+
+  async getAdminFeedback(query: AdminQuery): Promise<FeedbackView[]> {
+    let request = this.supabase
+      .from("feedback_submissions")
+      .select("id, feedback_type, feedback_text, user_id, match_id, user_agent, created_at")
+      .order("created_at", { ascending: false });
+
+    if (query.userId) {
+      request = request.eq("user_id", query.userId);
+    }
+
+    if (query.type) {
+      request = request.eq("feedback_type", query.type);
+    }
+
+    if (query.dateFrom) {
+      request = request.gte("created_at", query.dateFrom);
+    }
+
+    if (query.dateTo) {
+      request = request.lte("created_at", query.dateTo);
+    }
+
+    const { data, error } = await request.limit(100);
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((record) => this.mapFeedbackRecord(record));
+  }
+
+  async getAdminAnalyticsSummary(query: AdminQuery): Promise<AnalyticsSummaryView[]> {
+    let request = this.supabase
+      .from("audit_events")
+      .select("event_name, created_at")
+      .in("event_name", [
+        "session_created",
+        "onboarding_completed",
+        "queue_joined",
+        "match_created",
+        "voice_connected",
+        "voice_failed",
+        "end_find_next",
+        "report_submitted",
+        "block_submitted",
+        "feedback_submitted",
+      ]);
+
+    if (query.dateFrom) {
+      request = request.gte("created_at", query.dateFrom);
+    }
+
+    if (query.dateTo) {
+      request = request.lte("created_at", query.dateTo);
+    }
+
+    const { data, error } = await request.limit(1000);
+
+    if (error) {
+      throw error;
+    }
+
+    const counts = new Map<string, number>();
+
+    for (const row of data ?? []) {
+      counts.set(row.event_name as string, (counts.get(row.event_name as string) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .map(([eventName, count]) => ({ eventName, count }))
+      .sort((left, right) => left.eventName.localeCompare(right.eventName));
   }
 
 }

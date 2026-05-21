@@ -28,6 +28,14 @@ export class AdminService {
     return this.repository.getAdminAuditLogs(query);
   }
 
+  getFeedback(query: AdminQuery) {
+    return this.repository.getAdminFeedback(query);
+  }
+
+  getAnalyticsSummary(query: AdminQuery) {
+    return this.repository.getAdminAnalyticsSummary(query);
+  }
+
   async endMatch(matchId: string, reason = "admin_end") {
     const match = await this.repository.getMatchById(matchId);
 

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FeedbackForm } from "@/components/ui/feedback-form";
 import { Notice } from "@/components/ui/notice";
 import {
   apiGet,
@@ -222,29 +223,43 @@ export function MatchPage() {
         ) : null}
 
         {error && !sessionRecoveryNeeded ? (
-          <Notice title={errorTitle} tone="warning">
-            {error}
-            <div className="mt-3">
-              <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void loadMatchState()}>
-                Try Again
-              </Button>
-            </div>
-          </Notice>
+          <div className="space-y-4">
+            <Notice title={errorTitle} tone="warning">
+              {error}
+              <div className="mt-3">
+                <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void loadMatchState()}>
+                  Try Again
+                </Button>
+              </div>
+            </Notice>
+            <FeedbackForm
+              matchId={currentMatch?.matchId ?? queue?.recentMatch?.matchId ?? null}
+              defaultType="audio issue"
+              compact
+            />
+          </div>
         ) : null}
 
         {liveUpdateError ? (
-          <Notice title="Connection dropped." tone="warning">
-            We lost live updates for a moment. Your session may still be active, and we’re retrying now.
-            <div className="mt-3">
-              <Button
-                variant="ghost"
-                className="w-full sm:w-auto"
-                onClick={() => void loadMatchState({ background: true })}
-              >
-                Try Again
-              </Button>
-            </div>
-          </Notice>
+          <div className="space-y-4">
+            <Notice title="Connection dropped." tone="warning">
+              We lost live updates for a moment. Your session may still be active, and we’re retrying now.
+              <div className="mt-3">
+                <Button
+                  variant="ghost"
+                  className="w-full sm:w-auto"
+                  onClick={() => void loadMatchState({ background: true })}
+                >
+                  Try Again
+                </Button>
+              </div>
+            </Notice>
+            <FeedbackForm
+              matchId={currentMatch?.matchId ?? queue?.recentMatch?.matchId ?? null}
+              defaultType="audio issue"
+              compact
+            />
+          </div>
         ) : null}
 
         {currentMatch && currentMatch.status === "matched" ? (

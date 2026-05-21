@@ -9,6 +9,7 @@ import {
   detectRequestCountryCode,
 } from "@/server/auth/request-fingerprint";
 import { PlatformRepository } from "@/server/repositories/platform-repository";
+import type { AuditEventName } from "@/types/domain";
 
 interface SessionServiceDeps {
   createGuestSessionToken: () => string;
@@ -33,6 +34,38 @@ export class SessionService {
       detectRequestCountryCode,
     },
   ) {}
+
+  private async writeAuditEvent(input: {
+    actorUserId: string;
+    eventName: AuditEventName;
+    metadata?: Record<string, unknown>;
+  }) {
+    if (!("writeAuditEvent" in this.repository)) {
+      return;
+    }
+
+    await this.repository.writeAuditEvent(input);
+  }
+
+  private async assertSessionCreationRateLimit(fingerprintHash: string | null) {
+    if (!fingerprintHash) {
+      return;
+    }
+
+    if (!("incrementRateLimit" in this.repository)) {
+      return;
+    }
+
+    const count = await this.repository.incrementRateLimit({
+      action: "session_creation",
+      rateKey: fingerprintHash,
+      windowMs: 10 * 60 * 1000,
+    });
+
+    if (count > 12) {
+      throw createStatusError("Too many guest sessions from this device. Please wait a few minutes and try again.", 429);
+    }
+  }
 
   private mapSession(row: {
     user:
@@ -95,10 +128,20 @@ export class SessionService {
       this.deps.detectRequestCountryCode(),
     ]);
 
+    await this.assertSessionCreationRateLimit(fingerprintHash);
+
     const session = await this.repository.createGuestUserSession({
       tokenHash: this.deps.hashGuestSessionToken(createdToken),
       fingerprintHash,
       countryCode: detectedCountryCode,
+    });
+
+    await this.writeAuditEvent({
+      actorUserId: session.user_id,
+      eventName: "session_created",
+      metadata: {
+        detectedCountryCode,
+      },
     });
 
     return {
@@ -132,6 +175,13 @@ export class SessionService {
 
     await this.repository.completeOnboarding(userId, {
       countryCode: detectedCountryCode,
+    });
+    await this.writeAuditEvent({
+      actorUserId: userId,
+      eventName: "onboarding_completed",
+      metadata: {
+        detectedCountryCode,
+      },
     });
     return this.requireGuestSession();
   }

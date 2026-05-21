@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FeedbackForm } from "@/components/ui/feedback-form";
 import { Field } from "@/components/ui/field";
 import { Notice } from "@/components/ui/notice";
 import { Select } from "@/components/ui/select";
@@ -280,6 +281,8 @@ export function PostSessionPage() {
             Home
           </Link>
         </div>
+
+        <FeedbackForm matchId={recentMatch?.matchId ?? null} defaultType="suggestion" />
       </Card>
     </div>
   );

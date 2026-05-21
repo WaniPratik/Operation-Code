@@ -1,6 +1,7 @@
-import type { AUDIT_EVENT_NAMES, REPORT_REASONS } from "@/lib/constants";
+import type { AUDIT_EVENT_NAMES, FEEDBACK_TYPES, REPORT_REASONS } from "@/lib/constants";
 
 export type ReportReason = (typeof REPORT_REASONS)[number];
+export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 export type AuditEventName = (typeof AUDIT_EVENT_NAMES)[number];
 
 export interface GuestSessionView {
@@ -61,6 +62,21 @@ export interface AuditEventView {
   matchId: string | null;
   createdAt: string;
   metadata: Record<string, unknown>;
+}
+
+export interface FeedbackView {
+  feedbackId: string;
+  feedbackType: FeedbackType;
+  feedbackText: string;
+  userId: string | null;
+  matchId: string | null;
+  userAgent: string | null;
+  createdAt: string;
+}
+
+export interface AnalyticsSummaryView {
+  eventName: string;
+  count: number;
 }
 
 export interface AdminUserView {

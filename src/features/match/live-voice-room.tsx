@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Room, RoomEvent, Track } from "livekit-client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FeedbackForm } from "@/components/ui/feedback-form";
 import { Notice } from "@/components/ui/notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { apiPost, isSessionExpiredError } from "@/lib/client/api";
@@ -56,6 +57,17 @@ export function LiveVoiceRoom({
   const [connectionLost, setConnectionLost] = useState(false);
   const roomRef = useRef<Room | null>(null);
   const audioContainerRef = useRef<HTMLDivElement | null>(null);
+  const voiceConnectedRecordedRef = useRef<string | null>(null);
+
+  function recordVoiceEvent(eventName: "voice_connected" | "voice_failed", metadata?: Record<string, unknown>) {
+    void apiPost("/api/analytics", {
+      eventName,
+      matchId: match.matchId,
+      metadata,
+    }).catch(() => {
+      // Analytics should never interrupt the live call or recovery path.
+    });
+  }
 
   const statusLabel = useMemo(() => {
     if (preConnectionSecondsRemaining > 0) {
@@ -105,6 +117,17 @@ export function LiveVoiceRoom({
       setRemoteParticipantCount(room.remoteParticipants.size);
     };
 
+    const recordVoiceConnectedOnce = () => {
+      if (voiceConnectedRecordedRef.current === match.matchId) {
+        return;
+      }
+
+      voiceConnectedRecordedRef.current = match.matchId;
+      recordVoiceEvent("voice_connected", {
+        roomConnected: true,
+      });
+    };
+
     const handleTrackSubscribed = (track: Track) => {
       if (track.kind !== Track.Kind.Audio) {
         return;
@@ -131,6 +154,7 @@ export function LiveVoiceRoom({
     room
       .on(RoomEvent.Connected, () => {
         connectedOnce = true;
+        recordVoiceConnectedOnce();
         if (!cancelled) {
           setConnectionLost(false);
           setVoiceError(null);
@@ -149,6 +173,7 @@ export function LiveVoiceRoom({
       })
       .on(RoomEvent.Reconnected, () => {
         connectedOnce = true;
+        recordVoiceConnectedOnce();
         if (!cancelled) {
           setConnectionLost(false);
           setVoiceError(null);
@@ -174,6 +199,9 @@ export function LiveVoiceRoom({
       })
       .on(RoomEvent.MediaDevicesError, () => {
         if (!cancelled) {
+          recordVoiceEvent("voice_failed", {
+            reason: "media_devices_error",
+          });
           setVoiceError(
             "Mic access required. Please enable microphone permissions in your browser settings to join.",
           );
@@ -200,12 +228,16 @@ export function LiveVoiceRoom({
         setMicrophoneEnabled(true);
         setAudioBlocked(!room.canPlaybackAudio);
         syncParticipantCount();
+        recordVoiceConnectedOnce();
         setVoiceState("connected");
       } catch (error) {
         if (cancelled) {
           return;
         }
 
+        recordVoiceEvent("voice_failed", {
+          reason: error instanceof Error ? error.message : "unknown",
+        });
         setVoiceError(
           isSessionExpiredError(error)
             ? "Your guest session expired while voice was opening. Start a fresh session from onboarding to continue."
@@ -315,12 +347,15 @@ export function LiveVoiceRoom({
             </Notice>
           ) : null}
           {voiceError ? (
-            <Notice
-              title={voiceError.startsWith("Mic access required.") ? "Mic access required." : "Voice setup issue"}
-              tone="warning"
-            >
-              {voiceError}
-            </Notice>
+            <div className="space-y-4 text-left">
+              <Notice
+                title={voiceError.startsWith("Mic access required.") ? "Mic access required." : "Voice setup issue"}
+                tone="warning"
+              >
+                {voiceError}
+              </Notice>
+              <FeedbackForm matchId={match.matchId} defaultType="audio issue" compact />
+            </div>
           ) : null}
           {audioBlocked ? (
             <Notice title="Audio is paused" tone="info">
