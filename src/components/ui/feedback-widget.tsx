@@ -22,7 +22,7 @@ export function FeedbackWidget() {
         </div>
       ) : null}
       {sent && !open ? (
-        <p className="rounded-full bg-panel/95 px-3 py-2 text-xs text-ink/62 shadow-soft">Feedback sent.</p>
+        <p className="rounded-full bg-panel/95 px-3 py-2 text-xs text-ink shadow-soft">Feedback sent.</p>
       ) : null}
       <button
         type="button"
@@ -30,7 +30,7 @@ export function FeedbackWidget() {
           setSent(false);
           setOpen((value) => !value);
         }}
-        className="rounded-full border border-line bg-panel/90 px-4 py-2 text-xs font-medium text-ink/64 shadow-soft backdrop-blur transition hover:border-ink/30 hover:text-ink active:translate-y-px active:scale-[0.99]"
+        className="rounded-full border border-line bg-panel/95 px-4 py-2 text-xs font-medium text-ink shadow-soft backdrop-blur transition hover:border-ink/40 hover:bg-white active:translate-y-px active:scale-[0.99]"
       >
         Feedback
       </button>
