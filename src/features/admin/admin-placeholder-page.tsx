@@ -167,8 +167,8 @@ export function AdminPlaceholderPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <SectionHeading
             eyebrow="Admin dashboard"
-            title="Live moderation and report review"
-            description="This internal dashboard gives the founder a readable view of live matches, reports, blocks, and audit history without changing the core user flow for beta testers."
+            title="Echotalk.live moderation"
+            description="This internal dashboard gives the founder a readable view of live matches, reports, blocks, feedback, analytics, and audit history without changing the core user flow for beta testers."
           />
           <div className="flex flex-wrap gap-2">
             <StatusBadge tone="success">Protected admin session</StatusBadge>

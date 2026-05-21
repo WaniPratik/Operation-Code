@@ -17,9 +17,9 @@ const monoFont = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Anonymous Voice Match MVP",
+  title: "Echotalk.live",
   description:
-    "Web-first MVP for anonymous voice matching with persisted guest sessions, queueing, live voice rooms, moderation actions, audit logging, and a simple protected admin dashboard.",
+    "Web-first MVP for Echotalk.live anonymous voice matching with guest sessions, queueing, live voice rooms, moderation actions, audit logging, and a simple protected admin dashboard.",
 };
 
 export default function RootLayout({

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { EchoMark } from "@/components/brand/echo-mark";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useGuestSession } from "@/features/session/guest-session-provider";
 
@@ -17,15 +18,16 @@ export function SiteHeader() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
           <Link href="/" className="inline-flex items-center gap-3">
-            <span className="rounded-full bg-ember px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-white">
-              Beta MVP
+            <EchoMark className="size-8" />
+            <span className="rounded-full bg-ember px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-ink">
+              Beta
             </span>
             <span className="font-heading text-lg font-semibold sm:text-xl">
-              Anonymous Voice Match
+              Echotalk.live
             </span>
           </Link>
           <p className="max-w-2xl text-sm text-ink/70">
-            Guest-first voice matching with a fast queue, live voice handoff, and simple safety tools.
+            Fast guest voice matching with a live handoff and simple safety tools.
           </p>
         </div>
 

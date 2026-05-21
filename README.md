@@ -1,6 +1,6 @@
-# Anonymous Voice Match Platform
+# Echotalk.live
 
-Foundation repository for a web-first, mobile-responsive platform inspired by the category of anonymous/random voice matching between strangers.
+Foundation repository for Echotalk.live, a web-first, mobile-responsive platform inspired by the category of anonymous/random voice matching between strangers.
 
 This repository now includes the MVP foundation plus a first LiveKit-based voice handoff for matched users. The current goal is to keep the stack easy to audit while shipping only the narrowest real functionality needed for testing:
 
@@ -12,7 +12,7 @@ This repository now includes the MVP foundation plus a first LiveKit-based voice
 
 ## Product Intent
 
-The product is centered on lightweight, anonymous voice-based matching. Users should eventually be able to:
+Echotalk.live is centered on lightweight, anonymous voice-based matching. Users should eventually be able to:
 
 - enter a queue
 - get matched with another user

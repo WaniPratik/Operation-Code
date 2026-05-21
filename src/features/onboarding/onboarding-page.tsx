@@ -54,7 +54,7 @@ export function OnboardingPage() {
       <Card className="space-y-6 p-6 sm:p-8">
         <div className="space-y-3 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">
-            Anonymous voice
+            Echotalk.live
           </p>
           <h1 className="font-heading text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
             Talk freely.

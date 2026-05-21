@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --color-canvas: 247 241 231;
-  --color-ink: 26 31 37;
-  --color-ember: 214 99 51;
-  --color-mint: 56 151 124;
-  --color-sand: 233 223 205;
-  --color-panel: 255 251 245;
-  --color-line: 210 198 179;
+  --color-canvas: 246 243 237;
+  --color-ink: 60 47 64;
+  --color-ember: 167 154 127;
+  --color-mint: 167 154 127;
+  --color-sand: 226 220 208;
+  --color-panel: 255 253 249;
+  --color-line: 199 190 173;
   --color-danger: 175 49 49;
 }
 
@@ -26,8 +26,8 @@ body {
   min-height: 100vh;
   color: rgb(var(--color-ink));
   background:
-    radial-gradient(circle at top left, rgba(214, 99, 51, 0.12), transparent 30%),
-    radial-gradient(circle at top right, rgba(56, 151, 124, 0.12), transparent 25%),
+    radial-gradient(circle at top left, rgba(60, 47, 64, 0.13), transparent 30%),
+    radial-gradient(circle at top right, rgba(167, 154, 127, 0.18), transparent 25%),
     rgb(var(--color-canvas));
 }
 
@@ -37,9 +37,30 @@ a {
 }
 
 ::selection {
-  background: rgba(214, 99, 51, 0.18);
+  background: rgba(167, 154, 127, 0.28);
 }
 
 .text-balance {
   text-wrap: balance;
+}
+
+@keyframes echo-ripple {
+  0% {
+    opacity: 0.42;
+    transform: scale(0.72);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+.animate-echo-ripple {
+  animation: echo-ripple 2.4s ease-out infinite;
 }

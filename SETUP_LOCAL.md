@@ -1,8 +1,8 @@
 # Local Setup Guide
 
-This guide explains how to run the project on your own computer in plain English.
+This guide explains how to run Echotalk.live on your own computer in plain English.
 
-The app is a Next.js web app that uses Supabase/Postgres for data storage and LiveKit for the MVP voice room. You do not need to understand the code to follow these steps, but you do need a few tools installed first.
+Echotalk.live is a Next.js web app that uses Supabase/Postgres for data storage and LiveKit for the MVP voice room. You do not need to understand the code to follow these steps, but you do need a few tools installed first.
 
 ## 1. What You Need On Your Machine
 

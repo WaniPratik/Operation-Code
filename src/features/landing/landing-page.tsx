@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EchoMark } from "@/components/brand/echo-mark";
 import { Card } from "@/components/ui/card";
 import { Notice } from "@/components/ui/notice";
 import { useGuestSession } from "@/features/session/guest-session-provider";
@@ -14,15 +15,28 @@ export function LandingPage() {
       <Card className="overflow-hidden bg-hero-glow p-6 sm:p-8 lg:p-10">
         <div className="space-y-6 text-center">
           <div className="space-y-3">
+            <div className="flex justify-center">
+              <EchoMark className="size-12" />
+            </div>
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">
-              Anonymous voice
+              Echotalk.live
             </p>
             <h1 className="font-heading text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
               Talk freely.
             </h1>
             <p className="mx-auto max-w-md text-base leading-7 text-ink/72">
-              Anonymous voice chat. No sign-up.
+              Anonymous voice chat with a quick echo across the room. No sign-up.
             </p>
+          </div>
+
+          <div className="mx-auto flex max-w-xs items-end justify-center gap-1.5 opacity-70" aria-hidden="true">
+            {[10, 18, 28, 16, 34, 22, 12].map((height, index) => (
+              <span
+                key={`${height}-${index}`}
+                className="w-1 rounded-full bg-ink/40"
+                style={{ height }}
+              />
+            ))}
           </div>
 
           {error ? (
