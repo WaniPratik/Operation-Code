@@ -174,7 +174,7 @@ export function MatchPage() {
     <div className="mx-auto max-w-2xl">
       <Card className="space-y-6 p-6 sm:p-8">
         <div className="space-y-3 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">Live voice</p>
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/72">Live voice</p>
           <h1 className="font-heading text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
             You’re live.
           </h1>
@@ -264,7 +264,7 @@ export function MatchPage() {
 
         {currentMatch && currentMatch.status === "matched" ? (
           <>
-            <p className="text-center text-sm text-ink/58">Matched with {currentMatch.counterpart.handle}</p>
+            <p className="text-center text-sm text-ink/68">Matched with {currentMatch.counterpart.handle}</p>
 
             <LiveVoiceRoom
               match={currentMatch}

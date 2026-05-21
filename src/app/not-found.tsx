@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <Card className="max-w-xl space-y-4 p-8 text-center">
-        <p className="font-mono text-sm uppercase tracking-[0.18em] text-ember">
+        <p className="font-mono text-sm uppercase tracking-[0.18em] text-ink/72">
           Not Found
         </p>
         <h1 className="font-heading text-3xl font-semibold">That route does not exist.</h1>
@@ -15,7 +15,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="inline-flex rounded-full border border-line bg-panel px-5 py-3 text-sm font-medium transition hover:border-ember hover:text-ember"
+          className="inline-flex rounded-full border border-line bg-panel px-5 py-3 text-sm font-medium transition hover:border-ember hover:text-ink"
         >
           Return Home
         </Link>

@@ -34,7 +34,7 @@ export function FeedbackForm({
   return (
     <div className={compact ? "space-y-3" : "space-y-4 rounded-[1.75rem] border border-line bg-white/70 p-5"}>
       <div className="space-y-1">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Beta feedback</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Beta feedback</p>
         <p className="text-sm leading-6 text-ink/64">A quick note is optional. Type alone is enough.</p>
       </div>
 

@@ -41,7 +41,7 @@ export function FeedbackPrompt({
       <Button variant="ghost" className="w-full sm:w-auto" onClick={() => setOpen(true)}>
         {label}
       </Button>
-      {sent ? <p className="text-sm text-ink/58">Thanks. Feedback sent.</p> : null}
+      {sent ? <p className="text-sm text-ink/70">Thanks. Feedback sent.</p> : null}
     </div>
   );
 }

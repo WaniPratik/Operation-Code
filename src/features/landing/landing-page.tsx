@@ -18,13 +18,13 @@ export function LandingPage() {
             <div className="flex justify-center">
               <EchoMark className="size-12 bg-panel text-ink" />
             </div>
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-panel/86">
               Echotalk.live
             </p>
             <h1 className="font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
               Talk freely.
             </h1>
-            <p className="mx-auto max-w-md text-base leading-7 text-panel/74">
+            <p className="mx-auto max-w-md text-base leading-7 text-panel/86">
               Anonymous voice chat with a quick echo across the room. No sign-up.
             </p>
           </div>
@@ -51,7 +51,7 @@ export function LandingPage() {
               aria-disabled={loading}
               className={`inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition duration-150 active:translate-y-px active:scale-[0.99] sm:w-auto ${
                 loading
-                  ? "pointer-events-none bg-panel/45 text-panel"
+                  ? "pointer-events-none bg-panel/45 text-panel/85"
                   : "bg-panel text-ink hover:bg-panel/90"
               }`}
             >
@@ -59,11 +59,11 @@ export function LandingPage() {
             </Link>
             <a
               href="/api/auth/google"
-              className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-panel/72 transition duration-150 hover:bg-panel/10 hover:text-panel active:translate-y-px active:scale-[0.99] sm:w-auto"
+              className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-panel/86 transition duration-150 hover:bg-panel/10 hover:text-panel active:translate-y-px active:scale-[0.99] sm:w-auto"
             >
               Sign in with Google
             </a>
-            <p className="text-sm text-panel/68">
+            <p className="text-sm text-panel/82">
               {loading
                 ? "Setting up your private guest session."
                 : "Guest stays instant. Google is optional for beta testers."}

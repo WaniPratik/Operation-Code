@@ -207,7 +207,7 @@ export function AdminPlaceholderPage() {
       </Card>
 
       <Card className="space-y-4 p-6">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Filters</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Filters</p>
         <div className="grid gap-3 md:grid-cols-5">
           <Input
             value={userId}
@@ -266,7 +266,7 @@ export function AdminPlaceholderPage() {
             Reports and blocks submitted during a live call should also show a linked ended match reason here, so you can confirm the session was cut off immediately.
           </Notice>
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Active matches</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Active matches</p>
             <StatusBadge tone={activeMatches.length > 0 ? "warning" : "neutral"}>
               {activeMatches.length} live
             </StatusBadge>
@@ -339,7 +339,7 @@ export function AdminPlaceholderPage() {
 
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Recent ended matches</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Recent ended matches</p>
             <StatusBadge tone="neutral">{endedMatches.length} shown</StatusBadge>
           </div>
           <div className="space-y-4 text-sm">
@@ -384,7 +384,7 @@ export function AdminPlaceholderPage() {
       <section className="grid gap-6 xl:grid-cols-2">
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Beta feedback</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Beta feedback</p>
             <StatusBadge tone={data.feedback.length > 0 ? "warning" : "neutral"}>
               {data.feedback.length} items
             </StatusBadge>
@@ -406,7 +406,7 @@ export function AdminPlaceholderPage() {
                     {formatDate(feedback.createdAt)}
                   </p>
                   {feedback.userAgent ? (
-                    <p className="mt-2 break-words text-xs text-ink/50">{feedback.userAgent}</p>
+                    <p className="mt-2 break-words text-xs text-ink/68">{feedback.userAgent}</p>
                   ) : null}
                 </div>
               ))
@@ -416,7 +416,7 @@ export function AdminPlaceholderPage() {
 
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Beta analytics</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Beta analytics</p>
             <StatusBadge tone="neutral">{data.analytics.length} events</StatusBadge>
           </div>
           <div className="grid gap-3 text-sm sm:grid-cols-2">
@@ -425,7 +425,7 @@ export function AdminPlaceholderPage() {
             ) : (
               data.analytics.map((event) => (
                 <div key={event.eventName} className="rounded-2xl border border-line/70 bg-white/80 p-4">
-                  <p className="font-mono text-xs text-ink/56">{event.eventName}</p>
+                  <p className="font-mono text-xs text-ink/68">{event.eventName}</p>
                   <p className="mt-2 font-heading text-3xl font-semibold text-ink">{event.count}</p>
                 </div>
               ))
@@ -437,7 +437,7 @@ export function AdminPlaceholderPage() {
       <section className="grid gap-6 xl:grid-cols-2">
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Reports</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Reports</p>
             <StatusBadge tone={data.reports.length > 0 ? "warning" : "neutral"}>
               {data.reports.length} reports
             </StatusBadge>
@@ -505,7 +505,7 @@ export function AdminPlaceholderPage() {
 
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Blocks</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Blocks</p>
             <StatusBadge tone={data.blocks.length > 0 ? "warning" : "neutral"}>
               {data.blocks.length} blocks
             </StatusBadge>
@@ -546,7 +546,7 @@ export function AdminPlaceholderPage() {
       <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Filtered users</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Filtered users</p>
             <StatusBadge tone="neutral">{data.users.length} users</StatusBadge>
           </div>
           <div className="space-y-3 text-sm">
@@ -560,7 +560,7 @@ export function AdminPlaceholderPage() {
 
         <Card className="space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ember">Audit events</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink/72">Audit events</p>
             <StatusBadge tone="neutral">{data.auditLogs.length} events</StatusBadge>
           </div>
           <div className="space-y-4 text-sm">

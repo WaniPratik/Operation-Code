@@ -68,7 +68,7 @@ export function PostSessionPage() {
     <div className="mx-auto max-w-2xl">
       <Card className="space-y-6 p-6 sm:p-8">
         <div className="space-y-3 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">Session ended</p>
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/72">Session ended</p>
           <h1 className="font-heading text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
             Talk again?
           </h1>

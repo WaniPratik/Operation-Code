@@ -3,9 +3,9 @@ import { cn } from "@/lib/cn";
 type NoticeTone = "info" | "warning" | "danger";
 
 const toneClasses: Record<NoticeTone, string> = {
-  info: "border-line bg-sand/45 text-ink/80",
-  warning: "border-ember/40 bg-ember/15 text-ink/85",
-  danger: "border-danger/30 bg-danger/10 text-danger",
+  info: "border-line bg-panel/95 text-ink",
+  warning: "border-ember bg-panel/95 text-ink",
+  danger: "border-danger/50 bg-panel/95 text-danger",
 };
 
 export function Notice({

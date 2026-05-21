@@ -26,7 +26,7 @@ export function SiteHeader() {
               Echotalk.live
             </span>
           </Link>
-          <p className="max-w-2xl text-sm text-panel/72">
+          <p className="max-w-2xl text-sm text-panel/84">
             Fast guest voice matching with a live handoff and simple safety tools.
           </p>
         </div>
@@ -43,7 +43,7 @@ export function SiteHeader() {
 
           <Link
             href={adminLink.href}
-            className="text-sm font-medium text-panel/72 underline underline-offset-4 transition hover:text-panel"
+            className="text-sm font-medium text-panel/86 underline underline-offset-4 transition hover:text-panel"
           >
             {adminLink.label}
           </Link>

@@ -18,7 +18,7 @@ export function CountryFilterPicker({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium">{label}</p>
-        <span className="font-mono text-xs uppercase tracking-[0.16em] text-ink/50">
+        <span className="font-mono text-xs uppercase tracking-[0.16em] text-ink/72">
           up to {MVP_COUNTRY_FILTER_LIMIT}
         </span>
       </div>

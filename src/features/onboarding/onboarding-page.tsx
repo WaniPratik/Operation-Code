@@ -53,7 +53,7 @@ export function OnboardingPage() {
     <div className="mx-auto max-w-2xl">
       <Card className="space-y-6 p-6 sm:p-8">
         <div className="space-y-3 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/72">
             Echotalk.live
           </p>
           <h1 className="font-heading text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
@@ -105,7 +105,7 @@ export function OnboardingPage() {
               <p className="text-sm leading-7 text-ink/72">
                 Confirm {MINIMUM_AGE}+ once and we’ll move you straight into the queue.
               </p>
-              <p className="text-sm text-ink/58">Detected region: {loading ? "Checking..." : detectedCountryLabel}</p>
+              <p className="text-sm text-ink/68">Detected region: {loading ? "Checking..." : detectedCountryLabel}</p>
               <label className="flex items-start gap-3 text-sm leading-7 text-ink/82">
                 <input
                   type="checkbox"

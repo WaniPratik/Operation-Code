@@ -188,7 +188,7 @@ export function QueuePage() {
     <div className="mx-auto max-w-2xl">
       <Card className="space-y-6 p-6 sm:p-8">
         <div className="space-y-3 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ember">Queue</p>
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/72">Queue</p>
           <h1 className="font-heading text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
             {queueUiStatus === "connecting" ? "Bridging..." : "Finding your match..."}
           </h1>
@@ -395,7 +395,7 @@ export function QueuePage() {
             </div>
             <p className="mt-6 font-heading text-3xl font-semibold text-ink sm:text-4xl">Bridging...</p>
             <p className="mt-3 text-sm leading-7 text-ink/68">Almost there.</p>
-            <p className="mt-2 text-sm text-ink/52">{queue.activeMatch.counterpart.handle}</p>
+            <p className="mt-2 text-sm text-ink/68">{queue.activeMatch.counterpart.handle}</p>
             <p className="mt-6 font-heading text-5xl font-semibold text-ink">{connectingSecondsRemaining}</p>
           </div>
         ) : null}

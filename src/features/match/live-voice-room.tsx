@@ -365,7 +365,7 @@ export function LiveVoiceRoom({
             ) : null}
             {canControlAudio ? (
               <div className="flex w-full flex-col gap-2 rounded-2xl border border-line/80 bg-white/60 p-2 text-left sm:w-auto">
-                <p className="px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/56">
+                <p className="px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/72">
                   Audio output
                 </p>
                 <div className="grid grid-cols-2 gap-2">
