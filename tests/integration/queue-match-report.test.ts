@@ -254,7 +254,12 @@ class InMemoryPlatformRepository {
   }
 
   async getLatestMatchForUser(userId: string) {
-    return this.matches.find((match) => match.user_a_id === userId || match.user_b_id === userId) ?? null;
+    return (
+      this.matches
+        .slice()
+        .reverse()
+        .find((match) => match.user_a_id === userId || match.user_b_id === userId) ?? null
+    );
   }
 
   async getMatchById(matchId: string) {
@@ -424,6 +429,147 @@ describe("queue -> match -> end -> report flow", () => {
     expect(repository.blocks).toHaveLength(1);
     expect(repository.dbAuditEvents).toContain("match_ended");
     expect(auditEvents).toContain("user_blocked");
+  });
+
+  it("lets a user end a live session and immediately requeue for a different available user", async () => {
+    const repository = new InMemoryPlatformRepository();
+    repository.users.set("user_c", {
+      anonymous_handle: "guest_c",
+      age_attested_over_18: true,
+      onboarding_completed_at: "2026-04-14T00:00:00.000Z",
+      country_code: "GB",
+      device_fingerprint_hash: "fp_c",
+      created_at: "2026-04-14T00:00:00.000Z",
+    });
+    const queueService = new QueueService(repository as never, { write: async () => {} } as never);
+    const matchService = new MatchService(repository as never);
+
+    await queueService.joinQueue("user_a", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+    const firstMatch = await queueService.joinQueue("user_b", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    await matchService.endMatch("user_a", firstMatch.activeMatch!.matchId, "user_end");
+
+    expect(repository.activeParticipants.has("user_a")).toBe(false);
+    expect(repository.activeParticipants.has("user_b")).toBe(false);
+    expect((await queueService.getStatus("user_b")).activeMatch).toBeNull();
+
+    await queueService.joinQueue("user_a", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+    const secondMatch = await queueService.joinQueue("user_c", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    expect(secondMatch.activeMatch?.matchId).toBe("match_2");
+    expect(secondMatch.activeMatch?.counterpart.userId).toBe("user_a");
+    expect(repository.matches).toHaveLength(2);
+    expect(repository.queueEntries.filter((entry) => entry.user_id === "user_a" && entry.status === "queued")).toHaveLength(0);
+  });
+
+  it("lets a reporter requeue after report and skip", async () => {
+    const repository = new InMemoryPlatformRepository();
+    repository.users.set("user_c", {
+      anonymous_handle: "guest_c",
+      age_attested_over_18: true,
+      onboarding_completed_at: "2026-04-14T00:00:00.000Z",
+      country_code: "GB",
+      device_fingerprint_hash: "fp_c",
+      created_at: "2026-04-14T00:00:00.000Z",
+    });
+    const queueService = new QueueService(repository as never, { write: async () => {} } as never);
+    const matchService = new MatchService(repository as never);
+    const moderationService = new ModerationService(
+      repository as never,
+      { write: async () => {} } as never,
+      matchService as never,
+    );
+
+    await queueService.joinQueue("user_a", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+    const firstMatch = await queueService.joinQueue("user_b", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    await moderationService.submitReport("user_a", {
+      matchId: firstMatch.activeMatch!.matchId,
+      reason: "other",
+      details: "Skip after report.",
+    });
+    await queueService.joinQueue("user_a", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+    const secondMatch = await queueService.joinQueue("user_c", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    expect(repository.reports).toHaveLength(1);
+    expect(secondMatch.activeMatch?.counterpart.userId).toBe("user_a");
+    expect(repository.matches[1]?.status).toBe("matched");
+  });
+
+  it("lets a blocker requeue without rematching the blocked user", async () => {
+    const repository = new InMemoryPlatformRepository();
+    repository.users.set("user_c", {
+      anonymous_handle: "guest_c",
+      age_attested_over_18: true,
+      onboarding_completed_at: "2026-04-14T00:00:00.000Z",
+      country_code: "GB",
+      device_fingerprint_hash: "fp_c",
+      created_at: "2026-04-14T00:00:00.000Z",
+    });
+    const queueService = new QueueService(repository as never, { write: async () => {} } as never);
+    const matchService = new MatchService(repository as never);
+    const moderationService = new ModerationService(
+      repository as never,
+      { write: async () => {} } as never,
+      matchService as never,
+    );
+
+    await queueService.joinQueue("user_a", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+    const firstMatch = await queueService.joinQueue("user_b", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    await moderationService.blockUser("user_a", {
+      matchId: firstMatch.activeMatch!.matchId,
+    });
+    await queueService.joinQueue("user_a", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+    await queueService.joinQueue("user_b", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    expect((await queueService.getStatus("user_a")).activeMatch).toBeNull();
+
+    const nextMatch = await queueService.joinQueue("user_c", {
+      preferredCountries: [],
+      excludedCountries: [],
+    });
+
+    expect(repository.blocks).toHaveLength(1);
+    expect(nextMatch.activeMatch?.counterpart.userId).toBe("user_a");
+    expect(repository.matches[1]?.user_a_id === "user_a" || repository.matches[1]?.user_b_id === "user_a").toBe(true);
+    expect(repository.matches[1]?.user_a_id === "user_b" || repository.matches[1]?.user_b_id === "user_b").toBe(false);
   });
 
   it("keeps repeated polling idempotent once a match exists", async () => {

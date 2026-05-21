@@ -9,6 +9,7 @@ import { Notice } from "@/components/ui/notice";
 import {
   apiGet,
   apiPost,
+  ApiRequestError,
   isSessionExpiredError,
   sendBestEffortApiRequest,
 } from "@/lib/client/api";
@@ -28,6 +29,44 @@ export function MatchPage() {
   const [submitting, setSubmitting] = useState(false);
   const [now, setNow] = useState(Date.now());
   const cleanupMatchIdRef = useRef<string | null>(null);
+
+  async function joinQueueFromMatch() {
+    const payload = await apiPost<{
+      queue: QueueStatusView;
+    }>("/api/queue", {
+      preferredCountries: queue?.filters.preferredCountries ?? [],
+      excludedCountries: queue?.filters.excludedCountries ?? [],
+    });
+
+    setQueue(payload.queue);
+    setLiveUpdateError(null);
+    setSessionRecoveryNeeded(false);
+    router.push("/queue");
+  }
+
+  async function endAndFindNext(matchId: string) {
+    const payload = await apiPost<{
+      queue: QueueStatusView;
+      nextQueueError?: string;
+      nextQueueErrorStatus?: number;
+    }>("/api/match/end", {
+      matchId,
+      reason: "user_end",
+      findNext: true,
+      preferredCountries: queue?.filters.preferredCountries ?? [],
+      excludedCountries: queue?.filters.excludedCountries ?? [],
+    });
+
+    setQueue(payload.queue);
+    setLiveUpdateError(null);
+    setSessionRecoveryNeeded(false);
+
+    if (payload.nextQueueError) {
+      throw new ApiRequestError(payload.nextQueueError, payload.nextQueueErrorStatus ?? 400, "request_failed");
+    }
+
+    router.push("/queue");
+  }
 
   async function loadMatchState(options?: { background?: boolean }) {
     const isBackground = options?.background ?? false;
@@ -231,22 +270,20 @@ export function MatchPage() {
                   setErrorTitle("Match update failed");
 
                   try {
-                    const payload = await apiPost<{ queue: QueueStatusView }>("/api/match/end", {
-                      matchId: currentMatch.matchId,
-                      reason: "user_end",
-                    });
-                    setQueue(payload.queue);
-                    setLiveUpdateError(null);
-                    setSessionRecoveryNeeded(false);
+                    await endAndFindNext(currentMatch.matchId);
                   } catch (caughtError) {
-                    setErrorTitle("End session failed");
-                    setError(caughtError instanceof Error ? caughtError.message : "Unable to end match.");
+                    setErrorTitle("Finding next paused");
+                    setError(
+                      caughtError instanceof Error
+                        ? caughtError.message
+                        : "The session ended, but we could not start the next search yet.",
+                    );
                   } finally {
                     setSubmitting(false);
                   }
                 }}
               >
-                End session
+                End & Find Next
               </Button>
               <Link
                 href="/session/complete"
@@ -259,10 +296,27 @@ export function MatchPage() {
         ) : queue?.recentMatch?.status === "ended" ? (
           <div className="space-y-4">
             <Notice title="That session has ended" tone="info">
-              You can head back to the queue or open the safety tools if needed.
+              Start finding another voice when you are ready.
             </Notice>
-            <Button className="w-full" onClick={() => router.push("/queue")}>
-              Back to queue
+            <Button
+              className="w-full"
+              disabled={submitting}
+              onClick={async () => {
+                setSubmitting(true);
+                setError(null);
+                setErrorTitle("Match update failed");
+
+                try {
+                  await joinQueueFromMatch();
+                } catch (caughtError) {
+                  setErrorTitle("Finding next paused");
+                  setError(caughtError instanceof Error ? caughtError.message : "Unable to start finding next.");
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              Find Next
             </Button>
             <Link
               href="/session/complete"
@@ -276,8 +330,25 @@ export function MatchPage() {
             <Notice title="No active match" tone="warning">
               There is no live match to open right now.
             </Notice>
-            <Button className="w-full" onClick={() => router.push("/queue")}>
-              Back to queue
+            <Button
+              className="w-full"
+              disabled={submitting}
+              onClick={async () => {
+                setSubmitting(true);
+                setError(null);
+                setErrorTitle("Match update failed");
+
+                try {
+                  await joinQueueFromMatch();
+                } catch (caughtError) {
+                  setErrorTitle("Finding next paused");
+                  setError(caughtError instanceof Error ? caughtError.message : "Unable to start finding next.");
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              Find Next
             </Button>
           </div>
         ) : null}

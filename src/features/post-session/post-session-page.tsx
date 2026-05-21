@@ -55,6 +55,14 @@ export function PostSessionPage() {
   const reasonError = !reason && error === "Select a report reason first." ? error : undefined;
   const detailError = details.trim().length > 400 ? "Details must be 400 characters or fewer." : undefined;
 
+  async function startNewCall() {
+    await apiPost<{ queue: QueueStatusView }>("/api/queue", {
+      preferredCountries: queue?.filters.preferredCountries ?? [],
+      excludedCountries: queue?.filters.excludedCountries ?? [],
+    });
+    window.location.href = "/queue";
+  }
+
   return (
     <div className="mx-auto max-w-2xl">
       <Card className="space-y-6 p-6 sm:p-8">
@@ -179,12 +187,17 @@ export function PostSessionPage() {
                       title: wasLiveSession ? "Report submitted and session ended" : "Report submitted",
                       tone: wasLiveSession ? "warning" : "info",
                       message: wasLiveSession
-                        ? "Your report was saved and the live session ended immediately."
-                        : "Your report was saved successfully.",
+                        ? "Your report was saved. Finding the next voice now."
+                        : "Your report was saved. Finding the next voice now.",
                     });
                     await loadPostSessionState();
+                    await startNewCall();
                   } catch (caughtError) {
-                    setError(caughtError instanceof Error ? caughtError.message : "Unable to submit report.");
+                    setError(
+                      caughtError instanceof Error
+                        ? caughtError.message
+                        : "Your report was saved, but we could not start the next search yet.",
+                    );
                   } finally {
                     setSubmitting(false);
                   }
@@ -215,12 +228,17 @@ export function PostSessionPage() {
                       title: "User blocked. You won't be matched again.",
                       tone: "warning",
                       message: wasLiveSession
-                        ? "The live session ended immediately and the block was saved."
-                        : "The block was saved successfully.",
+                        ? "The live session ended and the block was saved. Finding the next voice now."
+                        : "The block was saved. Finding the next voice now.",
                     });
                     await loadPostSessionState();
+                    await startNewCall();
                   } catch (caughtError) {
-                    setError(caughtError instanceof Error ? caughtError.message : "Unable to block user.");
+                    setError(
+                      caughtError instanceof Error
+                        ? caughtError.message
+                        : "The block was saved, but we could not start the next search yet.",
+                    );
                   } finally {
                     setSubmitting(false);
                   }
@@ -237,12 +255,24 @@ export function PostSessionPage() {
         ) : null}
 
         <div className="space-y-3">
-          <Link
-            href="/queue"
-            className="inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-medium text-white transition duration-150 hover:bg-ink/90 active:translate-y-px active:scale-[0.99]"
+          <Button
+            className="w-full"
+            disabled={submitting}
+            onClick={async () => {
+              setSubmitting(true);
+              setError(null);
+
+              try {
+                await startNewCall();
+              } catch (caughtError) {
+                setError(caughtError instanceof Error ? caughtError.message : "Unable to start a new call yet.");
+              } finally {
+                setSubmitting(false);
+              }
+            }}
           >
             Start New Call
-          </Link>
+          </Button>
           <Link
             href="/"
             className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-ink/68 transition duration-150 hover:bg-sand/70 hover:text-ink active:translate-y-px active:scale-[0.99]"
