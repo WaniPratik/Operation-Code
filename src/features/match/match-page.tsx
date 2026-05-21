@@ -22,6 +22,7 @@ export function MatchPage() {
   const [queue, setQueue] = useState<QueueStatusView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorTitle, setErrorTitle] = useState("Match update failed");
   const [liveUpdateError, setLiveUpdateError] = useState<string | null>(null);
   const [sessionRecoveryNeeded, setSessionRecoveryNeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -34,6 +35,7 @@ export function MatchPage() {
     if (!isBackground) {
       setLoading(true);
       setError(null);
+      setErrorTitle("Match update failed");
     }
 
     try {
@@ -49,6 +51,7 @@ export function MatchPage() {
       setSessionRecoveryNeeded(needsSessionRestart);
 
       if (needsSessionRestart || !isBackground) {
+        setErrorTitle("Match update failed");
         setError(message);
         setLiveUpdateError(null);
         return;
@@ -180,7 +183,7 @@ export function MatchPage() {
         ) : null}
 
         {error && !sessionRecoveryNeeded ? (
-          <Notice title="Match update failed" tone="warning">
+          <Notice title={errorTitle} tone="warning">
             {error}
             <div className="mt-3">
               <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void loadMatchState()}>
@@ -225,14 +228,18 @@ export function MatchPage() {
 
                   setSubmitting(true);
                   setError(null);
+                  setErrorTitle("Match update failed");
 
                   try {
-                    await apiPost("/api/match/end", {
+                    const payload = await apiPost<{ queue: QueueStatusView }>("/api/match/end", {
                       matchId: currentMatch.matchId,
                       reason: "user_end",
                     });
-                    await loadMatchState();
+                    setQueue(payload.queue);
+                    setLiveUpdateError(null);
+                    setSessionRecoveryNeeded(false);
                   } catch (caughtError) {
+                    setErrorTitle("End session failed");
                     setError(caughtError instanceof Error ? caughtError.message : "Unable to end match.");
                   } finally {
                     setSubmitting(false);

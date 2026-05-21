@@ -48,6 +48,10 @@ function normalizeUserFacingApiMessage(message: string) {
     return "This session is no longer available for your guest session. Refresh and try again.";
   }
 
+  if (/permission denied for function end_match_transactional/i.test(message)) {
+    return "We could not end this session. Try again, then refresh if it is still active.";
+  }
+
   if (/duplicate key value violates unique constraint/i.test(message)) {
     return "We hit a temporary retry issue. Refresh and try again.";
   }

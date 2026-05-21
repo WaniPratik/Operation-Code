@@ -105,6 +105,22 @@ describe("parseApiResponse", () => {
       "The live session is no longer ready. Refresh this page or return to the queue.",
     );
   });
+
+  it("normalizes match-ending RPC permission failures into a recoverable message", async () => {
+    const response = new Response(
+      JSON.stringify({ error: "permission denied for function end_match_transactional" }),
+      {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    await expect(parseApiResponse(response, "/api/match/end")).rejects.toThrow(
+      "We could not end this session. Try again, then refresh if it is still active.",
+    );
+  });
 });
 
 describe("sendBestEffortApiRequest", () => {
