@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --color-canvas: 246 243 237;
+  --color-canvas: 238 234 228;
   --color-ink: 60 47 64;
   --color-ember: 167 154 127;
   --color-mint: 167 154 127;
-  --color-sand: 226 220 208;
-  --color-panel: 255 253 249;
-  --color-line: 199 190 173;
+  --color-sand: 221 216 207;
+  --color-panel: 250 248 244;
+  --color-line: 188 178 160;
   --color-danger: 175 49 49;
 }
 
@@ -26,8 +26,9 @@ body {
   min-height: 100vh;
   color: rgb(var(--color-ink));
   background:
-    radial-gradient(circle at top left, rgba(60, 47, 64, 0.13), transparent 30%),
-    radial-gradient(circle at top right, rgba(167, 154, 127, 0.18), transparent 25%),
+    radial-gradient(circle at top left, rgba(60, 47, 64, 0.24), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(60, 47, 64, 0.14), transparent 34%),
+    radial-gradient(circle at top right, rgba(167, 154, 127, 0.1), transparent 22%),
     rgb(var(--color-canvas));
 }
 

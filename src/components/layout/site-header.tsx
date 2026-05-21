@@ -14,11 +14,11 @@ export function SiteHeader() {
     : { href: "/admin", label: "Admin" };
 
   return (
-    <header className="mb-6 rounded-[1.75rem] border border-line/80 bg-panel/90 px-4 py-4 shadow-soft backdrop-blur sm:px-6">
+    <header className="mb-6 rounded-[1.75rem] border border-ember/30 bg-ink px-4 py-4 text-panel shadow-soft backdrop-blur sm:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
           <Link href="/" className="inline-flex items-center gap-3">
-            <EchoMark className="size-8" />
+            <EchoMark className="size-8 bg-panel text-ink" />
             <span className="rounded-full bg-ember px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-ink">
               Beta
             </span>
@@ -26,7 +26,7 @@ export function SiteHeader() {
               Echotalk.live
             </span>
           </Link>
-          <p className="max-w-2xl text-sm text-ink/70">
+          <p className="max-w-2xl text-sm text-panel/72">
             Fast guest voice matching with a live handoff and simple safety tools.
           </p>
         </div>
@@ -43,14 +43,14 @@ export function SiteHeader() {
 
           <Link
             href={adminLink.href}
-            className="text-sm font-medium text-ink/70 underline underline-offset-4 transition hover:text-ink"
+            className="text-sm font-medium text-panel/72 underline underline-offset-4 transition hover:text-panel"
           >
             {adminLink.label}
           </Link>
         </div>
       </div>
 
-      {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-panel">{error}</p> : null}
     </header>
   );
 }

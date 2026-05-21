@@ -7,6 +7,10 @@ import { Card } from "@/components/ui/card";
 import { FeedbackPrompt } from "@/components/ui/feedback-prompt";
 import { Notice } from "@/components/ui/notice";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  applyAudioOutputMode,
+  type AudioOutputMode,
+} from "@/features/match/audio-output-routing";
 import { apiPost, isSessionExpiredError } from "@/lib/client/api";
 import type { MatchView } from "@/types/domain";
 
@@ -53,10 +57,14 @@ export function LiveVoiceRoom({
   const [audioBlocked, setAudioBlocked] = useState(false);
   const [remoteParticipantCount, setRemoteParticipantCount] = useState(0);
   const [microphoneEnabled, setMicrophoneEnabled] = useState(true);
+  const [audioOutputMode, setAudioOutputMode] = useState<AudioOutputMode>("default");
+  const [audioOutputMessage, setAudioOutputMessage] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const [connectionLost, setConnectionLost] = useState(false);
   const roomRef = useRef<Room | null>(null);
   const audioContainerRef = useRef<HTMLDivElement | null>(null);
+  const audioElementsRef = useRef(new Set<HTMLMediaElement>());
+  const audioOutputModeRef = useRef<AudioOutputMode>("default");
   const voiceConnectedRecordedRef = useRef<string | null>(null);
 
   function recordVoiceEvent(eventName: "voice_connected" | "voice_failed", metadata?: Record<string, unknown>) {
@@ -93,6 +101,10 @@ export function LiveVoiceRoom({
   useEffect(() => {
     onVoiceStateChange?.(voiceState);
   }, [onVoiceStateChange, voiceState]);
+
+  useEffect(() => {
+    audioOutputModeRef.current = audioOutputMode;
+  }, [audioOutputMode]);
 
   useEffect(() => {
     if (preConnectionSecondsRemaining > 0) {
@@ -137,7 +149,13 @@ export function LiveVoiceRoom({
       element.autoplay = true;
       element.dataset.livekitRoom = match.matchId;
       audioContainerRef.current?.appendChild(element);
+      audioElementsRef.current.add(element);
       attachedAudioElements.add(element);
+      void applyAudioOutputMode([element], audioOutputModeRef.current).then((result) => {
+        if (!cancelled) {
+          setAudioOutputMessage(result.message);
+        }
+      });
     };
 
     const handleTrackUnsubscribed = (track: Track) => {
@@ -147,6 +165,7 @@ export function LiveVoiceRoom({
 
       for (const element of track.detach()) {
         attachedAudioElements.delete(element);
+        audioElementsRef.current.delete(element);
         element.remove();
       }
     };
@@ -256,6 +275,7 @@ export function LiveVoiceRoom({
       roomRef.current = null;
 
       for (const element of attachedAudioElements) {
+        audioElementsRef.current.delete(element);
         element.remove();
       }
 
@@ -294,6 +314,20 @@ export function LiveVoiceRoom({
     }
   }
 
+  async function chooseAudioOutput(nextMode: AudioOutputMode) {
+    setAudioOutputMode(nextMode);
+    audioOutputModeRef.current = nextMode;
+
+    try {
+      const result = await applyAudioOutputMode(audioElementsRef.current, nextMode);
+      setAudioOutputMessage(result.message);
+    } catch (error) {
+      setAudioOutputMessage(
+        error instanceof Error ? error.message : "Use your device audio controls.",
+      );
+    }
+  }
+
   const canControlAudio = voiceState === "connected" || voiceState === "reconnecting";
 
   return (
@@ -328,6 +362,32 @@ export function LiveVoiceRoom({
               <Button variant="secondary" className="w-full sm:w-auto" onClick={() => void toggleMicrophone()}>
                 {microphoneEnabled ? "Mute mic" : "Unmute mic"}
               </Button>
+            ) : null}
+            {canControlAudio ? (
+              <div className="flex w-full flex-col gap-2 rounded-2xl border border-line/80 bg-white/60 p-2 text-left sm:w-auto">
+                <p className="px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/56">
+                  Audio output
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={audioOutputMode === "default" ? "primary" : "ghost"}
+                    className="px-3 py-2"
+                    onClick={() => void chooseAudioOutput("default")}
+                  >
+                    Default audio
+                  </Button>
+                  <Button
+                    variant={audioOutputMode === "speaker" ? "primary" : "ghost"}
+                    className="px-3 py-2"
+                    onClick={() => void chooseAudioOutput("speaker")}
+                  >
+                    Speaker
+                  </Button>
+                </div>
+                {audioOutputMessage ? (
+                  <p className="px-2 text-xs leading-5 text-ink/60">{audioOutputMessage}</p>
+                ) : null}
+              </div>
             ) : null}
             {audioBlocked ? (
               <Button variant="ghost" className="w-full sm:w-auto" onClick={() => void enableAudioPlayback()}>

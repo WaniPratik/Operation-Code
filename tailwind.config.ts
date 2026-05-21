@@ -28,7 +28,7 @@ const config: Config = {
         xl2: "1.5rem",
       },
       backgroundImage: {
-        "hero-glow": "radial-gradient(circle at top left, rgba(60, 47, 64, 0.16), transparent 40%), radial-gradient(circle at top right, rgba(167, 154, 127, 0.22), transparent 30%)",
+        "hero-glow": "linear-gradient(135deg, rgba(60, 47, 64, 0.96), rgba(60, 47, 64, 0.84)), radial-gradient(circle at top right, rgba(167, 154, 127, 0.24), transparent 32%)",
       },
     },
   },

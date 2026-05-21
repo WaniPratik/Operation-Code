@@ -34,6 +34,7 @@ This repo now includes a Phase 3 MVP shell with persisted backend flows built ar
 - persisted match lifecycle, report/block actions, and audit events
 - match-scoped LiveKit token issuance and room cleanup on match end
 - a matched screen that transitions into a live audio room after the existing two-second handoff
+- best-effort web audio output controls where the browser supports output routing
 - a simple password-protected admin moderation dashboard for active matches, reports, blocks, and audit logs
 - initial Supabase/Postgres migrations and seed data
 - unit and integration tests for matching, session flow, and core route behavior
@@ -45,6 +46,7 @@ It still does **not** include:
 - full staff RBAC and deeper moderation workflows
 - cross-region scaling or worker-based queue partitioning
 - production-grade observability around media quality and room health
+- native phone earpiece/speaker guarantees, because browser output routing varies by device and browser
 
 ## Repo Structure
 
