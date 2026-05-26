@@ -81,4 +81,31 @@ describe("POST /api/report", () => {
       error: "User is not a participant in this match.",
     });
   });
+
+  it("accepts the current spam/bot report reason", async () => {
+    requireGuestSession.mockResolvedValue({ userId: "user_1" });
+    submitReport.mockResolvedValue({
+      id: "report_2",
+      matchId: "match_1",
+    });
+
+    const { POST } = await import("@/app/api/report/route");
+    const response = await POST(
+      new Request("http://localhost:3000/api/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matchId: "match_1",
+          reason: "spam/bot",
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(submitReport).toHaveBeenCalledWith("user_1", {
+      matchId: "match_1",
+      reason: "spam/bot",
+      details: "",
+    });
+  });
 });

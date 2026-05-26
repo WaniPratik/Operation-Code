@@ -106,6 +106,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for rationale and tradeoffs.
 - [BETA_CHECKLIST.md](BETA_CHECKLIST.md): founder-facing private beta launch checklist
 - [BETA_ISSUE_INTAKE.md](BETA_ISSUE_INTAKE.md): lightweight founder bug and issue intake template
 - [BETA_TESTING_SCRIPT.md](BETA_TESTING_SCRIPT.md): closed-beta runbook for a 3 to 5 tester live session
+- [SYNTHETIC_BETA_TESTING.md](SYNTHETIC_BETA_TESTING.md): guarded browser and API stress tests for local or staging beta readiness
 
 ## Product Decisions Currently Locked
 
@@ -160,6 +161,13 @@ Run unit tests:
 
 ```bash
 npm run test
+```
+
+Run synthetic beta checks:
+
+```bash
+ALLOW_STRESS_TEST=true npm run test:e2e
+ALLOW_STRESS_TEST=true STRESS_USERS=10 npm run stress:api
 ```
 
 Check startup readiness:

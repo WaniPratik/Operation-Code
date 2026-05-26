@@ -374,6 +374,10 @@ export class PlatformRepository {
       throw error;
     }
 
+    if (!data) {
+      throw new Error("Report insert did not return a row.");
+    }
+
     return data;
   }
 
@@ -927,14 +931,14 @@ export class PlatformRepository {
     reason: string;
     details: string;
   }) {
-    const { data, error } = await this.supabase
+    const insertReport = (reason: string) => this.supabase
       .from("reports")
       .insert({
         reporter_user_id: input.reporterUserId,
         reported_user_id: input.reportedUserId,
         match_id: input.matchId,
         session_id: input.sessionId,
-        reason: input.reason,
+        reason,
         details: input.details,
       })
       .select("id, match_id, reporter_user_id, reported_user_id, reason, details, status, created_at")
@@ -948,6 +952,17 @@ export class PlatformRepository {
         status: string;
         created_at: string;
       }>();
+
+    let { data, error } = await insertReport(input.reason);
+
+    if (
+      error &&
+      input.reason === "spam/bot" &&
+      "code" in error &&
+      error.code === "22P02"
+    ) {
+      ({ data, error } = await insertReport("spam or scam"));
+    }
 
     if (error) {
       throw error;

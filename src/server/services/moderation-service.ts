@@ -36,6 +36,10 @@ export class ModerationService {
       details: input.details,
     });
 
+    if (!report) {
+      throw new Error("Report submission did not return a saved report.");
+    }
+
     await this.audit.write({
       actorUserId: userId,
       targetUserId,
